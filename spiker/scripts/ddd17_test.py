@@ -18,8 +18,12 @@ from spiker.data import ddd17
 from spiker import log
 
 # load data
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "highway-down-2.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "highway-down-1.hdf5")
 file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-down-2.hdf5")
+                         "highway-up-1.hdf5")
 
 binsize = 0.1
 fixed_dt = binsize > 0
