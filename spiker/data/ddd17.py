@@ -3,6 +3,13 @@
 Migrate DDD17 data reading utilities from
 old utils to here.
 
+It uses legacy codes from ddd17-utils
+that read and write data to correct
+form.
+
+Source of the ddd17-utils:
+https://code.ini.uzh.ch/jbinas/ddd17-utils
+
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
