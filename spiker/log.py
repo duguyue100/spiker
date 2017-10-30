@@ -12,6 +12,6 @@ from __future__ import print_function
 import spiker
 
 
-def print_log(log_msg):
+def log(log_msg):
     """Print Log Message."""
     print (log_msg)

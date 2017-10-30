@@ -26,4 +26,7 @@ dvs128-test:
 spiker-setup:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/__init__.py
 
+ddd17-test:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_test.py
+
 cleanall:

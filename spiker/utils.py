@@ -24,10 +24,10 @@ def makedir(path, log_msg=None, verbose=False):
     """
     try:
         os.makedirs(path)
-        log.print_log(log_msg)
+        log.log(log_msg)
     except OSError:
         if verbose is True:
-            log.print_log("The path %s exists" % path)
+            log.log("The path %s exists" % path)
 
 
 def makefile(file_path, log_msg=None, verbose=False):
@@ -44,10 +44,10 @@ def makefile(file_path, log_msg=None, verbose=False):
     if not os.path.isfile(file_path):
         with open(file_path, "a"):
             os.utime(file_path, None)
-        log.print_log(log_msg)
+        log.log(log_msg)
     else:
         if verbose is True:
-            log.print_log("The file %s exists" % file_path)
+            log.log("The file %s exists" % file_path)
 
 
 def makedirs(path_list, log_msg=None, verbose=False):
@@ -63,7 +63,7 @@ def makedirs(path_list, log_msg=None, verbose=False):
     """
     for path in path_list:
         makedir(path, verbose=verbose)
-    log.print_log(log_msg)
+    log.log(log_msg)
 
 
 def makefiles(filepath_list, log_msg=None, verbose=False):
@@ -79,4 +79,4 @@ def makefiles(filepath_list, log_msg=None, verbose=False):
     """
     for filename in filepath_list:
         makefile(filename, verbose=verbose)
-    log.print_log(log_msg)
+    log.log(log_msg)
