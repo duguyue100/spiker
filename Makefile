@@ -23,4 +23,7 @@ test:
 dvs128-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/dvs128_test.py
 
+spiker-setup:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/__init__.py
+
 cleanall:
