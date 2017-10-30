@@ -14,6 +14,7 @@ Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
 from __future__ import print_function
+import os
 
 import time
 import struct
@@ -81,6 +82,26 @@ EVENT_TYPES = {
         }
 
 etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
+
+
+def prepare_train_data(file_name):
+    """Prepare training data from HDF5.
+
+    Only for steering prediction.
+    """
+    if not os.path.isfile(file_name):
+        raise ValueError("The file is not existed.")
+
+    data_file = h5py.File(file_name, "r")
+
+    dvs_frame = data_file["dvs_frame"][()]
+    aps_frame = data_file["aps_frame"][()]
+    steering = data_file["steering_wheel_angle"][()]
+    steering = np.pi/2 - steering / 180. * np.pi
+
+    data_file.close()
+
+    return dvs_frame, aps_frame, steering
 
 
 def filter_frame(d):

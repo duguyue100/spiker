@@ -29,4 +29,7 @@ spiker-setup:
 ddd17-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_test.py
 
+ddd17-load-test:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_load_test.py
+
 cleanall:
