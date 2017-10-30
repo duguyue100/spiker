@@ -52,6 +52,7 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     log.log("[MESSAGE] Number of blocks: %d" % (blocks))
 
     # load data
+    # TODO
 
     # setup image shape
     input_shape = (64, 64, 2)
