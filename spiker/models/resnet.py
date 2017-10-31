@@ -98,13 +98,13 @@ def resnet_block(input_tensor, kernel_size,
     return x
 
 
-def resnet_builder(model_name, input_shape, filter_list, kernel_size,
-                   output_dim, stages, blocks, bottleneck=True):
+def resnet_builder(model_name, input_shape, batch_size, filter_list,
+                   kernel_size, output_dim, stages, blocks, bottleneck=True):
     """Build ResNet."""
     bn_axis = 3
 
     # prepare input
-    img_input = Input(shape=input_shape)
+    img_input = Input(shape=input_shape, batch_shape=batch_size)
 
     # pre stage
     x = Conv2D(filter_list[0][-1], kernel_size, padding="same",

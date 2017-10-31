@@ -75,6 +75,7 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     # Build model
     model = resnet.resnet_builder(
         model_name=model_name, input_shape=input_shape,
+        batch_size=batch_size,
         filter_list=filter_list, kernel_size=(3, 3),
         output_dim=1, stages=stages, blocks=blocks,
         bottleneck=False)
