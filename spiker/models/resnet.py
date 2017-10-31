@@ -124,11 +124,11 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
     for stage_idx in range(1, stages):
         # input block
         x = resnet_block(x, kernel_size, filter_list[stage_idx],
-                         stage_idx, "1", strides=(2, 2),
+                         stage_idx+1, "1", strides=(2, 2),
                          block_type="conv", bottleneck=bottleneck)
         for block_idx in range(1, blocks):
             x = resnet_block(x, kernel_size, filter_list[stage_idx],
-                             stage_idx, str(block_idx+1), strides=(1, 1),
+                             stage_idx+1, str(block_idx+1), strides=(1, 1),
                              block_type="identity", bottleneck=bottleneck)
 
     # post stage
