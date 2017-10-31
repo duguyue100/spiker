@@ -60,12 +60,14 @@ def resnet_block(input_tensor, kernel_size,
                    name=conv_name_base+"2a")(input_tensor)
     else:
         x = Conv2D(filters1, kernel_size, strides=strides,
+                   padding="same",
                    kernel_initializer="he_normal",
                    kernel_regularizer=l2(0.0001),
                    bias_initializer="zeros",
                    name=conv_name_base+"2a")(input_tensor) \
             if block_type == "conv" else \
             Conv2D(filters1, kernel_size,
+                   padding="same",
                    kernel_initializer="he_normal",
                    kernel_regularizer=l2(0.0001),
                    bias_initializer="zeros",
