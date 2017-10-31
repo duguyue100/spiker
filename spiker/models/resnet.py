@@ -114,7 +114,13 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
         """resize input."""
         return tf.image.resize_images(x, (64, 86))
 
-    x = Lambda(resize_input)(img_input)
+    def resize_output_shape(input_shape):
+        """output shape."""
+        shape = list(input_shape)
+        return (shape[0], 64, 86, shape[-1])
+
+    x = Lambda(resize_input,
+               output_shape=resize_output_shape)(img_input)
 
     # pre stage
     x = Conv2D(filter_list[0][-1], kernel_size, padding="same",
