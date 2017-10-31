@@ -94,14 +94,16 @@ def prepare_train_data(file_name):
 
     data_file = h5py.File(file_name, "r")
 
-    dvs_frame = data_file["dvs_frame"][()]
-    aps_frame = data_file["aps_frame"][()]
+    frames = np.concatenate((
+        (data_file["dvs_frame"][()][..., np.newaxis] +
+            127).astype("uint8"),
+        data_file["aps_frame"][()][..., np.newaxis]), axis=3)
     steering = data_file["steering_wheel_angle"][()]
     steering = np.pi/2 - steering / 180. * np.pi
 
     data_file.close()
 
-    return dvs_frame, aps_frame, steering
+    return frames, steering
 
 
 def filter_frame(d):

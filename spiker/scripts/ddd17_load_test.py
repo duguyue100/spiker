@@ -9,23 +9,27 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from skimage.transform import rotate
+
 import spiker
 from spiker.data import ddd17
 
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
                          "highway-down-1-export.hdf5")
 
-dvs_frame, aps_frame, steering = ddd17.prepare_train_data(data_path)
+frames, steering = ddd17.prepare_train_data(data_path)
 
-print (dvs_frame.shape)
-print (aps_frame.shape)
+print (frames.shape)
 print (steering.shape)
 
-dvs_sample = np.array(dvs_frame[300], dtype=np.float32)
-dvs_sample = np.asarray(dvs_sample/np.max(dvs_sample)*256,
-                        dtype=np.uint8)
+dvs_mean = frames[..., 0].mean(axis=(1, 2))
+
+#  dvs_temp = dvs_frame[6400]
+#  dvs_temp = (dvs_temp+127).astype("float32").astype("uint8")
+#  dvs_temp = rotate(dvs_temp, angle=180)
 
 plt.figure()
-plt.imshow(dvs_sample, cmap="gray")
+#  plt.imshow(dvs_temp, cmap="gray")
 #  plt.plot(steering[50:-350])
+plt.plot(dvs_mean[50:-350])
 plt.show()
