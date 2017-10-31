@@ -72,8 +72,6 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     # setup image shape
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
 
-    log.log(input_shape)
-
     # Build model
     model = resnet.resnet_builder(
         model_name=model_name, input_shape=input_shape,

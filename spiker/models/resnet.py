@@ -13,7 +13,6 @@ from builtins import range
 
 from keras.layers import Input
 from keras.layers import Dense
-from keras.layers import Lambda
 from keras.layers import Conv2D
 from keras.layers import BatchNormalization
 from keras.layers import Activation
@@ -21,8 +20,6 @@ from keras.layers import GlobalAveragePooling2D
 from keras.layers import add
 from keras.models import Model
 from keras.regularizers import l2
-
-import tensorflow as tf
 
 
 def resnet_block(input_tensor, kernel_size,
@@ -109,25 +106,12 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
     # prepare input
     img_input = Input(shape=input_shape)
 
-    # resize image
-    def resize_input(x):
-        """resize input."""
-        return tf.image.resize_images(x, (64, 86))
-
-    def resize_output_shape(input_shape):
-        """output shape."""
-        shape = list(input_shape)
-        return (shape[0], 64, 86, shape[-1])
-
-    x = Lambda(resize_input,
-               output_shape=resize_output_shape)(img_input)
-
     # pre stage
     x = Conv2D(filter_list[0][-1], kernel_size, padding="same",
                kernel_initializer="he_normal",
                kernel_regularizer=l2(0.0001),
                bias_initializer="zeros",
-               name="conv1")(x)
+               name="conv1")(img_input)
     x = BatchNormalization(axis=bn_axis, name="bn_conv1")(x)
     x = Activation("relu")(x)
 

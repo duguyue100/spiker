@@ -26,6 +26,7 @@ except ImportError:
 
 import h5py
 import numpy as np
+from scipy.misc import imresize, imrotate
 
 from spiker import data
 
@@ -87,7 +88,7 @@ EVENT_TYPES = {
 etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 
 
-def prepare_train_data(file_name):
+def prepare_train_data(file_name, target_size=(64, 86), verbose=True):
     """Prepare training data from HDF5.
 
     Only for steering prediction.
@@ -97,16 +98,26 @@ def prepare_train_data(file_name):
 
     data_file = h5py.File(file_name, "r")
 
-    frames = np.concatenate((
-        (data_file["dvs_frame"][()][..., np.newaxis] +
-            127).astype("uint8"),
-        data_file["aps_frame"][()][..., np.newaxis]), axis=3)
+    dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
+    aps_frames = data_file["aps_frame"][()]
+
+    data_shape = dvs_frames.shape
+    frames = np.zeros((data_shape[0],)+target_size+(2,))
+    for idx in range(data_shape[0]):
+        frames[idx, :, :, 0] = imresize(
+            imrotate(dvs_frames[idx], 180), target_size)
+        frames[idx, :, :, 1] = imresize(
+            imrotate(aps_frames[idx], 180), target_size)
+        if verbose is True:
+            if idx % 101 == 0:
+                print ("[MESSAGE] %d images processed." % (idx))
+
     steering = data_file["steering_wheel_angle"][()]
     steering = np.pi/2 - steering / 180. * np.pi
 
     data_file.close()
 
-    return frames, steering
+    return frames.astype("float32"), steering
 
 
 def filter_frame(d):
