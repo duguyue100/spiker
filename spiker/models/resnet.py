@@ -13,14 +13,16 @@ from builtins import range
 
 from keras.layers import Input
 from keras.layers import Dense
+from keras.layers import Lambda
 from keras.layers import Conv2D
 from keras.layers import BatchNormalization
 from keras.layers import Activation
-from keras.layers import AveragePooling2D
-from keras.layers import Flatten
+from keras.layers import GlobalAveragePooling2D
 from keras.layers import add
 from keras.models import Model
 from keras.regularizers import l2
+
+from tensorflow.image import resize_images
 
 
 def resnet_block(input_tensor, kernel_size,
@@ -100,12 +102,19 @@ def resnet_block(input_tensor, kernel_size,
 
 
 def resnet_builder(model_name, input_shape, filter_list, kernel_size,
-                   last_dim, output_dim, stages, blocks, bottleneck=True):
+                   output_dim, stages, blocks, bottleneck=True):
     """Build ResNet."""
     bn_axis = 3
 
     # prepare input
     img_input = Input(shape=input_shape)
+
+    # resize image
+    def resize_input(x):
+        """resize input."""
+        return resize_images(x, (64, 86))
+
+    x = Lambda(resize_input)(img_input)
 
     # pre stage
     x = Conv2D(filter_list[0], kernel_size, padding="same",
@@ -135,8 +144,8 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
     # post stage
     x = BatchNormalization(axis=bn_axis)(x)
     x = Activation("relu")(x)
-    x = AveragePooling2D((last_dim, last_dim), name="avg-pool")(x)
-    x = Flatten()(x)
+    x = GlobalAveragePooling2D(data_format="channels_last",
+                               name="avg-pool")(x)
     x = Dense(output_dim,
               kernel_initializer="he_normal",
               kernel_regularizer=l2(0.0001),

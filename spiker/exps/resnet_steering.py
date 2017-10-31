@@ -18,6 +18,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import spiker
 from spiker import log
 from spiker.models import resnet
+from spiker.data import ddd17
 
 exp = Experiment("ResNet - Steering - Experiment")
 
@@ -52,16 +53,28 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     log.log("[MESSAGE] Number of blocks: %d" % (blocks))
 
     # load data
-    # TODO
+    data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                             "highway-down-1-export.hdf5")
+    frames, steering = ddd17.prepare_train_data(data_path)
+    frames = frames[50:-350]
+    steering = steering[50:-350]
+    num_samples = frames.shape[0]
+    num_train = int(num_samples*0.7)
+    X_train = frames[:num_train]
+    Y_train = steering[:num_train]
+    X_test = frames[num_train:]
+    Y_test = steering[num_train:]
+
+    del frames, steering
 
     # setup image shape
-    input_shape = (64, 64, 2)
+    input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
 
     # Build model
     model = resnet.resnet_builder(
         model_name=model_name, input_shape=input_shape,
         filter_list=filter_list, kernel_size=(3, 3),
-        last_dim=16, output_dim=1, stages=stages, blocks=blocks,
+        output_dim=1, stages=stages, blocks=blocks,
         bottleneck=False)
 
     model.summary()
