@@ -1,0 +1,8 @@
+{
+    "model_name": "resnet-steering-3-5",
+    "stages": 3,
+    "blocks": 5,
+    "filter_list": [16, 32, 64],
+    "nb_epoch": 200,
+    "batch_size": 64 
+}
