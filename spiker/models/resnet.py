@@ -104,7 +104,7 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
     bn_axis = 3
 
     # prepare input
-    img_input = Input(shape=input_shape, batch_shape=batch_size)
+    img_input = Input(batch_shape=(batch_size,)+input_shape)
 
     # pre stage
     x = Conv2D(filter_list[0][-1], kernel_size, padding="same",
