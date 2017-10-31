@@ -35,6 +35,6 @@ ddd17-load-test:
 # Experiments
 
 resnet-steering-3-5:
-	PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/resnet-steering-3-5.json
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/resnet-steering-3-5.json
 
 cleanall:
