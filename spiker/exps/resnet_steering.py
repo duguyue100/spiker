@@ -67,6 +67,8 @@ def resnet_exp(model_name, stages, blocks, filter_list,
 
     del frames, steering
 
+    log.log("[MESSAGE] Number of samples %d" % (num_samples))
+
     # setup image shape
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
 
