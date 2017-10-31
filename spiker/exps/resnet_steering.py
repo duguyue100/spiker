@@ -8,12 +8,12 @@ import os
 
 from sacred import Experiment
 
+import numpy as np
 from keras.utils.vis_utils import plot_model
 from keras import optimizers
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import LearningRateScheduler
 from keras.callbacks import CSVLogger
-from keras.preprocessing.image import ImageDataGenerator
 
 import spiker
 from spiker import log
@@ -56,7 +56,8 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
                              "highway-down-1-export.hdf5")
     frames, steering = ddd17.prepare_train_data(data_path)
-    frames = frames[50:-350].astype("float32")
+    frames = frames[50:-350]/255.
+    frames -= np.mean(frames, keepdims=True)
     steering = steering[50:-350]
     num_samples = frames.shape[0]
     num_train = int(num_samples*0.7)
@@ -68,6 +69,8 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     del frames, steering
 
     log.log("[MESSAGE] Number of samples %d" % (num_samples))
+    log.log("[MESSAGE] Number of train samples %d" % (X_train.shape[0]))
+    log.log("[MESSAGE] Number of test samples %d" % (X_test.shape[0]))
 
     # setup image shape
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
@@ -113,24 +116,10 @@ def resnet_exp(model_name, stages, blocks, filter_list,
 
     callbacks_list = [checkpoint, scheduler, csv_logger]
 
-    # configure data stream
-    datagen = ImageDataGenerator(
-        rescale=1./255,
-        featurewise_center=True,
-        samplewise_center=False,
-        featurewise_std_normalization=False,
-        samplewise_std_normalization=False,
-        zca_whitening=False,
-        rotation_range=0,
-        width_shift_range=0.125,
-        height_shift_range=0.125,
-        horizontal_flip=False,
-        vertical_flip=False,
-        data_format="channels_last")
-
     # training
-    model.fit_generator(
-            datagen.flow(X_train, Y_train, batch_size=batch_size),
-            steps_per_epoch=X_train.shape[0] // batch_size,
-            epochs=nb_epoch, validation_data=(X_test, Y_test),
-            callbacks=callbacks_list)
+    model.fit(
+        x=X_train, y=Y_train,
+        batch_size=batch_size,
+        epochs=nb_epoch,
+        validation_data=(X_test, Y_test),
+        callbacks=callbacks_list)
