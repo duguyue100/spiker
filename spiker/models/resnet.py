@@ -22,7 +22,7 @@ from keras.layers import add
 from keras.models import Model
 from keras.regularizers import l2
 
-from tensorflow.image import resize_images
+import tensorflow as tf
 
 
 def resnet_block(input_tensor, kernel_size,
@@ -112,7 +112,7 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
     # resize image
     def resize_input(x):
         """resize input."""
-        return resize_images(x, (64, 86))
+        return tf.image.resize_images(x, (64, 86))
 
     x = Lambda(resize_input)(img_input)
 
