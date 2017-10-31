@@ -56,7 +56,7 @@ def resnet_exp(model_name, stages, blocks, filter_list,
     data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
                              "highway-down-1-export.hdf5")
     frames, steering = ddd17.prepare_train_data(data_path)
-    frames = frames[50:-350]
+    frames = frames[50:-350].astype("float32")
     steering = steering[50:-350]
     num_samples = frames.shape[0]
     num_train = int(num_samples*0.7)
@@ -114,6 +114,7 @@ def resnet_exp(model_name, stages, blocks, filter_list,
 
     # configure data stream
     datagen = ImageDataGenerator(
+        rescale=1./255,
         featurewise_center=True,
         samplewise_center=False,
         featurewise_std_normalization=False,
