@@ -19,7 +19,10 @@ import os
 import time
 import struct
 import Queue
-import multiprocess as mp
+try:
+    import multiprocess as mp
+except ImportError:
+    import multiprocessing as mp
 
 import h5py
 import numpy as np
