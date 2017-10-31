@@ -117,7 +117,7 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
     x = Lambda(resize_input)(img_input)
 
     # pre stage
-    x = Conv2D(filter_list[0][0], kernel_size, padding="same",
+    x = Conv2D(filter_list[0][-1], kernel_size, padding="same",
                kernel_initializer="he_normal",
                kernel_regularizer=l2(0.0001),
                bias_initializer="zeros",
