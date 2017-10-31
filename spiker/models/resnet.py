@@ -121,7 +121,7 @@ def resnet_builder(model_name, input_shape, filter_list, kernel_size,
                kernel_initializer="he_normal",
                kernel_regularizer=l2(0.0001),
                bias_initializer="zeros",
-               name="conv1")(img_input)
+               name="conv1")(x)
     x = BatchNormalization(axis=bn_axis, name="bn_conv1")(x)
     x = Activation("relu")(x)
 
