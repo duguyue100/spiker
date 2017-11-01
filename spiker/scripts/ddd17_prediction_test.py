@@ -31,30 +31,35 @@ Y_test = steering[num_train:]
 model_path = os.path.join(
     spiker.SPIKER_EXPS, "resnet-steering-3-5",
     "resnet-steering-3-5-104-0.01.hdf5")
-model = utils.load_keras_model(model_path)
+model = utils.keras_load_model(model_path)
 
 # generate prediction
-num_test = X_test.shape[0]
+aps_dvs_prediction = utils.keras_predict_batch(model, X_test, verbose=True)
 
-Y_predict = np.array([])
+x_axis = np.arange(X_test.shape[0])
 
-for batch in xrange(num_test // 64):
-    y_predict = model.predict(X_test[batch*64:(batch+1)*64])
-    Y_predict = y_predict if Y_predict.size == 0 else \
-        np.vstack((Y_predict, y_predict))
-    print ("[MESSAGE] Processed %d/%d, size: %d"
-           % (batch+1, num_test//64, Y_predict.shape[0]))
-
-y_predict = model.predict(X_test[-(num_test % 64):])
-Y_predict = np.vstack((Y_predict, y_predict))
-
-print (Y_predict.shape)
-print (Y_test.shape)
-
-x_axis = np.arange(num_test)
-
-plt.figure()
+plt.figure(figsize=(10, 3))
 plt.plot(x_axis, Y_test, "r", label="ground truth")
-plt.plot(x_axis, Y_predict, "g", label="predicted")
+plt.plot(x_axis, aps_dvs_prediction, "g", label="predicted")
+plt.title("APS and DVS combined.")
 plt.legend()
-plt.show()
+plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-dvs-prediction.png"),
+            dpi=200, format="png")
+
+# load model
+model_path = os.path.join(
+    spiker.SPIKER_EXPS, "resnet-steering-aps-3-5",
+    "resnet-steering-aps-3-5-73-0.01.hdf5")
+model = utils.keras_load_model(model_path)
+aps_prediction = utils.keras_predict_batch(
+    model, X_test[..., 1][..., np.newaxis], verbose=True)
+
+plt.figure(figsize=(10, 3))
+plt.plot(x_axis, Y_test, "r", label="ground truth")
+plt.plot(x_axis, aps_prediction, "g", label="predicted")
+plt.title("APS only.")
+plt.xlabel("frames")
+plt.ylabel("radius")
+plt.legend()
+plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-prediction.png"),
+            dpi=200, format="png")
