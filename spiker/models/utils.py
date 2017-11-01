@@ -63,3 +63,29 @@ def keras_predict_batch(model, data, batch_size=64, verbose=False):
         Y_predict = np.vstack((Y_predict, y_predict))
 
     return Y_predict
+
+
+def parse_csv_log(csv_log_path, verbose=False):
+    """Parse CSV Log.
+
+    Assume only 5 columns.
+    NOTICE: assume the file is from Keras csv logger.
+
+    Parameters
+    ----------
+    csv_log_path : string
+        absolute path to the csv log
+    verbose : boo
+        optional debug message
+    """
+    if not os.path.isfile(csv_log_path):
+        raise ValueError("The CSV Log does not exist at %s" % (csv_log_path))
+
+    log_data = np.genfromtxt(
+        csv_log_path, dtype="float32", delimiter=",", names=True,
+        usecols=(1, 2, 3, 4))
+
+    if verbose is True:
+        print ("[MESSSAGE] Available fields are:", log_data.dtype.names)
+
+    return log_data
