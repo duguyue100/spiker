@@ -145,6 +145,6 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
               bias_initializer="zeros",
               name="output")(x)
 
-    model = Model(img_input, x, name="model_name")
+    model = Model(img_input, x, name=model_name)
 
     return model
