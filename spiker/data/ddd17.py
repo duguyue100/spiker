@@ -88,7 +88,8 @@ EVENT_TYPES = {
 etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 
 
-def prepare_train_data(file_name, target_size=(64, 86), verbose=True):
+def prepare_train_data(file_name, target_size=(64, 86),
+                       num_samples=None, verbose=True):
     """Prepare training data from HDF5.
 
     Only for steering prediction.
@@ -98,19 +99,28 @@ def prepare_train_data(file_name, target_size=(64, 86), verbose=True):
 
     data_file = h5py.File(file_name, "r")
 
-    dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
+    #  dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
+    dvs_frames = (data_file["dvs_frame"][()]*8+127).astype("uint8")
     aps_frames = data_file["aps_frame"][()]
 
     data_shape = dvs_frames.shape
-    frames = np.zeros((data_shape[0],)+target_size+(2,))
-    for idx in range(data_shape[0]):
-        frames[idx, :, :, 0] = imresize(
-            imrotate(dvs_frames[idx], 180), target_size)
-        frames[idx, :, :, 1] = imresize(
-            imrotate(aps_frames[idx], 180), target_size)
+    num_data = data_shape[0] if num_samples is None else num_samples
+    if target_size is not None:
+        frames = np.zeros((num_data,)+target_size+(2,))
+    else:
+        frames = np.zeros((num_data,)+(data_shape[1], data_shape[2])+(2,))
+    for idx in range(num_data):
+        if target_size is not None:
+            frames[idx, :, :, 0] = imresize(
+                imrotate(dvs_frames[idx], 180), target_size)
+            frames[idx, :, :, 1] = imresize(
+                imrotate(aps_frames[idx], 180), target_size)
+        else:
+            frames[idx, :, :, 0] = imrotate(dvs_frames[idx], 180)
+            frames[idx, :, :, 1] = imrotate(aps_frames[idx], 180)
         if verbose is True:
-            if idx % 101 == 0:
-                print ("[MESSAGE] %d images processed." % (idx))
+            if (idx+1) % 100 == 0:
+                print ("[MESSAGE] %d images processed." % (idx+1))
 
     steering = data_file["steering_wheel_angle"][()][..., np.newaxis]
     # TODO: check if this make sense
@@ -132,17 +142,21 @@ def filter_frame(d):
     return frame8
 
 
-def raster_evts(data, data_shape=data.DAVIS346_SHAPE):
+def raster_evts(data, clip_value=15, data_shape=data.DAVIS346_SHAPE):
     _histrange = [(0, v) for v in data_shape]
     pol_on = data[:, 3] == 1
     pol_off = np.logical_not(pol_on)
     img_on, _, _ = np.histogram2d(
             data[pol_on, 2], data[pol_on, 1],
             bins=data_shape, range=_histrange)
+    # clipping to constrain activity
+    img_on = np.clip(img_on, 0, clip_value)
     img_off, _, _ = np.histogram2d(
             data[pol_off, 2], data[pol_off, 1],
             bins=data_shape, range=_histrange)
-    return (img_on - img_off).astype(np.int16)
+    # clipping to constrain activity
+    img_off = np.clip(img_off, 0, clip_value)
+    return (img_on - img_off).astype(np.int8)
 
 
 def _flush_q(q):

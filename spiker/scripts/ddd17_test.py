@@ -20,10 +20,10 @@ from spiker import log
 # load data
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-down-2.hdf5")
-#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-#                           "highway-down-1.hdf5")
 file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-up-1.hdf5")
+                         "highway-down-1.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "highway-up-1.hdf5")
 
 binsize = 0.1
 fixed_dt = binsize > 0
@@ -48,7 +48,7 @@ dtypes = {k: float for k in ddd17.EXPORT_DATA.union({'timestamp'})}
 dtypes['aps_frame'] = (np.uint8, data.DAVIS346_SHAPE)
 dtypes['dvs_frame'] = (np.int16, data.DAVIS346_SHAPE)
 
-outfile = file_name[:-5] + '-export.hdf5'
+outfile = file_name[:-5] + '-export-experimental.hdf5'
 
 f_out = ddd17.HDF5(outfile, dtypes, mode='w',
                    chunksize=8, compression='gzip')
@@ -103,6 +103,8 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
         ddd17.unpack_data(d)
         times = d['data'][:, 0] * 1e-6 + t_offset
         num_evts = d['data'].shape[0]
+        print ("Number of events in this frame: %d"
+               % (num_evts))
         offset = 0
         if fixed_dt:
             # fixed time interval bin mode
