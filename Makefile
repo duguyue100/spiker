@@ -32,6 +32,9 @@ ddd17-test:
 ddd17-load-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_load_test.py
 
+ddd17-prediction-test:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_prediction_test.py
+
 # Experiments
 
 resnet-steering-3-5:
