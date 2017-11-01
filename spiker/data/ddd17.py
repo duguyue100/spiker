@@ -113,6 +113,7 @@ def prepare_train_data(file_name, target_size=(64, 86), verbose=True):
                 print ("[MESSAGE] %d images processed." % (idx))
 
     steering = data_file["steering_wheel_angle"][()][..., np.newaxis]
+    # TODO: check if this make sense
     steering = np.pi/2 - steering / 180. * np.pi
 
     data_file.close()

@@ -1,0 +1,11 @@
+{
+    "model_name": "resnet-steering-aps-3-5",
+    "channel_id": 1,
+    "stages": 3,
+    "blocks": 5,
+    "filter_list": [[16, 16, 16],
+                    [32, 32, 32],
+                    [64, 64, 64]],
+    "nb_epoch": 200,
+    "batch_size": 64 
+}
