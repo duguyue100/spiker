@@ -97,18 +97,18 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
                show_layer_names=True)
 
     # configure optimizer
-    def step_decay(epoch):
-        "step decay callback."""
-        if epoch >= 80 and epoch < 120:
-            return float(0.01)
-        elif epoch >= 120:
-            return float(0.001)
-        else:
-            return float(0.1)
+    #  def step_decay(epoch):
+    #      "step decay callback."""
+    #      if epoch >= 80 and epoch < 120:
+    #          return float(0.01)
+    #      elif epoch >= 120:
+    #          return float(0.001)
+    #      else:
+    #          return float(0.1)
 
-    sgd = optimizers.SGD(lr=0.0, momentum=0.9, nesterov=True)
+    #  sgd = optimizers.SGD(lr=0.0, momentum=0.9, nesterov=True)
     model.compile(loss='mean_squared_error',
-                  optimizer=sgd,
+                  optimizer="adam",
                   metrics=["mse"])
     print ("[MESSAGE] Model is compiled.")
     model_file = model_file_base + \
@@ -118,12 +118,12 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
                                  verbose=1,
                                  save_best_only=True,
                                  mode='min')
-    scheduler = LearningRateScheduler(step_decay)
+    #  scheduler = LearningRateScheduler(step_decay)
 
     csv_his_log = os.path.join(model_path, "csv_history.log")
     csv_logger = CSVLogger(csv_his_log, append=True)
 
-    callbacks_list = [checkpoint, scheduler, csv_logger]
+    callbacks_list = [checkpoint, csv_logger]
 
     # training
     model.fit(
