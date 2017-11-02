@@ -15,10 +15,10 @@ from spiker.data import ddd17
 
 # load data
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-down-1-export-experimental.hdf5")
+                         "highway-up-1-export-experimental.hdf5")
 
 frames, steering = ddd17.prepare_train_data(data_path,
-                                            #  target_size=None,
+                                            target_size=None,
                                             num_samples=3000)
 fps = 10
 duration = frames.shape[0]/float(fps)
@@ -36,5 +36,5 @@ def make_aps_dvs_frame(t):
 
 clip = mpy.VideoClip(make_aps_dvs_frame, duration=duration)
 
-clip.write_videofile(os.path.join(spiker.SPIKER_EXTRA, "hw-down-1.mp4"),
+clip.write_videofile(os.path.join(spiker.SPIKER_EXTRA, "hw-up-1-full.mp4"),
                      fps=fps)

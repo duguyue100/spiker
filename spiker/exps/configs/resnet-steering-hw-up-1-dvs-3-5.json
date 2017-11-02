@@ -1,0 +1,12 @@
+{
+    "model_name": "resnet-steering-hw-up-1-dvs-3-5",
+    "data_name": "highway-up-1-export-experimental.hdf5",
+    "channel_id": 0,
+    "stages": 3,
+    "blocks": 5,
+    "filter_list": [[16, 16, 16],
+                    [32, 32, 32],
+                    [64, 64, 64]],
+    "nb_epoch": 200,
+    "batch_size": 64 
+}
