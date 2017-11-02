@@ -101,7 +101,7 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     #  dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
     dvs_frames = data_file["dvs_frame"][()]
-    dvs_frames = (dvs_frames*(int(127./np.max(dvs_frames))) +
+    dvs_frames = (dvs_frames*(int(127./np.max(np.abs(dvs_frames)))) +
                   127).astype("uint8")
     #  dvs_frames = (data_file["dvs_frame"][()]*8+127).astype("uint8")
     aps_frames = data_file["aps_frame"][()]

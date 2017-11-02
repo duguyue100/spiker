@@ -38,6 +38,9 @@ ddd17-prediction-test:
 ddd17-loss-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_loss_test.py
 
+ddd17-export-video:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_export_video.py
+
 # Experiments
 
 resnet-steering-3-5:
@@ -51,5 +54,11 @@ resnet-steering-aps-3-5:
 
 resnet-steering-hw-2-3-5:
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/resnet-steering-hw-2-3-5.json
+
+resnet-steering-hw-2-dvs-3-5:
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering_single_channel.py with ./spiker/exps/configs/resnet-steering-hw-2-dvs-3-5.json
+
+resnet-steering-hw-2-aps-3-5:
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering_single_channel.py with ./spiker/exps/configs/resnet-steering-hw-2-aps-3-5.json
 
 cleanall:
