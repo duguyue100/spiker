@@ -15,7 +15,7 @@ from spiker.data import ddd17
 
 # load and process data
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-down-1-export.hdf5")
+                         "highway-down-1-export-experimental.hdf5")
 frames, steering = ddd17.prepare_train_data(data_path)
 frames = frames[50:-350]/255.
 frames -= np.mean(frames, keepdims=True)
