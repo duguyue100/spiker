@@ -116,7 +116,10 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
                 # take n events
                 n = (times[offset:] < t_pre + binsize).sum()
                 sel = slice(offset, offset + n)
-                current_row['dvs_frame'] += ddd17.raster_evts(d['data'][sel])
+                current_row['dvs_frame'] += \
+                    ddd17.raster_evts(d['data'][sel], clip_value=1)
+                #  current_row['dvs_frame'] += \
+                #      ddd17.raster_evts_new(d['data'][sel])
                 offset += n
                 # save if we're in the middle of a packet, otherwise
                 # wait for more data

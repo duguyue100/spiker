@@ -145,6 +145,13 @@ def filter_frame(d):
     return frame8
 
 
+def raster_evts_new(data, clip_value=None, data_shape=data.DAVIS346_SHAPE):
+    pol_img = np.zeros(data_shape)
+    pol_img[data[:, 2], data[:, 1]] = data[:, 3]
+
+    return pol_img.astype(np.int16)
+
+
 def raster_evts(data, clip_value=None, data_shape=data.DAVIS346_SHAPE):
     _histrange = [(0, v) for v in data_shape]
     pol_on = data[:, 3] == 1
