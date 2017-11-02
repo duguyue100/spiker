@@ -52,6 +52,11 @@ resnet-steering-dvs-3-5:
 resnet-steering-aps-3-5:
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering_single_channel.py with ./spiker/exps/configs/resnet-steering-aps-3-5.json
 
+resnet_steering-hw-2:
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/resnet-steering-hw-2-3-5.json
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering_single_channel.py with ./spiker/exps/configs/resnet-steering-hw-2-dvs-3-5.json
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering_single_channel.py with ./spiker/exps/configs/resnet-steering-hw-2-aps-3-5.json
+
 resnet-steering-hw-2-3-5:
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/resnet-steering-hw-2-3-5.json
 
