@@ -18,7 +18,7 @@ data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
                          "highway-down-1-export-experimental.hdf5")
 
 frames, steering = ddd17.prepare_train_data(data_path,
-                                            target_size=None,
+                                            #  target_size=None,
                                             num_samples=600)
 
 print (frames.shape)

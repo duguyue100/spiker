@@ -24,6 +24,7 @@ exp = Experiment("ResNet - Steering - Single Channel - Experiment")
 
 exp.add_config({
     "model_name": "",  # the model name
+    "data_name": "",  # the data name
     "channel_id": 0,  # which channel to chose, 0: dvs, 1: aps
     "stages": 0,  # number of stages
     "blocks": 0,  # number of blocks of each stage
@@ -34,7 +35,7 @@ exp.add_config({
 
 
 @exp.automain
-def resnet_exp(model_name, channel_id, stages, blocks, filter_list,
+def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
                nb_epoch, batch_size):
     """Perform ResNet experiment."""
     model_path = os.path.join(spiker.SPIKER_EXPS, model_name)
@@ -55,7 +56,10 @@ def resnet_exp(model_name, channel_id, stages, blocks, filter_list,
 
     # load data
     data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                             "highway-down-1-export-experimental.hdf5")
+                             data_name)
+    if not os.path.isfile(data_path):
+        raise ValueError("This dataset does not exist at %s" % (data_path))
+    log.log("[MESSAGE] Dataset %s" % (data_path))
     frames, steering = ddd17.prepare_train_data(data_path)
     frames = frames[50:-350]/255.
     frames -= np.mean(frames, keepdims=True)

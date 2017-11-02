@@ -21,12 +21,13 @@ from spiker import log
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-down-2.hdf5")
 file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-down-1.hdf5")
+                         "highway-down-2.hdf5")
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-up-1.hdf5")
 
 binsize = 0.1
 fixed_dt = binsize > 0
+clip_value = 31
 
 f_in = ddd17.HDF5Stream(file_name, ddd17.EXPORT_DATA_VI.union({'dvs'}))
 merged = ddd17.MergedStream(f_in)
@@ -103,8 +104,8 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
         ddd17.unpack_data(d)
         times = d['data'][:, 0] * 1e-6 + t_offset
         num_evts = d['data'].shape[0]
-        print ("Number of events in this frame: %d"
-               % (num_evts))
+        #  print ("Number of events in this frame: %d"
+        #         % (num_evts))
         offset = 0
         if fixed_dt:
             # fixed time interval bin mode
@@ -122,6 +123,8 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
                     f_out.save(deepcopy(current_row))
                     current_row['dvs_frame'][:, :] = 0
                     t_pre += binsize
+            np.clip(current_row['dvs_frame'], -clip_value, clip_value,
+                    out=current_row['dvs_frame'])
         else:
             # fixed event count mode
             num_samples = np.ceil(-float(num_evts + ev_count)/binsize)
@@ -137,6 +140,8 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
                     f_out.save(deepcopy(current_row))
                     current_row['dvs_frame'][:, :] = 0
                     ev_count = 0
+            np.clip(current_row['dvs_frame'], -clip_value, clip_value,
+                    out=current_row['dvs_frame'])
 
 print('[DEBUG] sys_ts/time_stop', sys_ts, time_stop*1e-6)
 merged.exit.set()

@@ -100,7 +100,10 @@ def prepare_train_data(file_name, target_size=(64, 86),
     data_file = h5py.File(file_name, "r")
 
     #  dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
-    dvs_frames = (data_file["dvs_frame"][()]*8+127).astype("uint8")
+    dvs_frames = data_file["dvs_frame"][()]
+    dvs_frames = (dvs_frames*(int(127./np.max(dvs_frames))) +
+                  127).astype("uint8")
+    #  dvs_frames = (data_file["dvs_frame"][()]*8+127).astype("uint8")
     aps_frames = data_file["aps_frame"][()]
 
     data_shape = dvs_frames.shape
@@ -142,7 +145,7 @@ def filter_frame(d):
     return frame8
 
 
-def raster_evts(data, clip_value=15, data_shape=data.DAVIS346_SHAPE):
+def raster_evts(data, clip_value=None, data_shape=data.DAVIS346_SHAPE):
     _histrange = [(0, v) for v in data_shape]
     pol_on = data[:, 3] == 1
     pol_off = np.logical_not(pol_on)
@@ -150,13 +153,19 @@ def raster_evts(data, clip_value=15, data_shape=data.DAVIS346_SHAPE):
             data[pol_on, 2], data[pol_on, 1],
             bins=data_shape, range=_histrange)
     # clipping to constrain activity
-    img_on = np.clip(img_on, 0, clip_value)
+    if clip_value is not None:
+        img_on = np.clip(img_on, 0, clip_value)
     img_off, _, _ = np.histogram2d(
             data[pol_off, 2], data[pol_off, 1],
             bins=data_shape, range=_histrange)
     # clipping to constrain activity
-    img_off = np.clip(img_off, 0, clip_value)
-    return (img_on - img_off).astype(np.int8)
+    if clip_value is not None:
+        img_off = np.clip(img_off, 0, clip_value)
+    if clip_value is not None:
+        integrated_img = np.clip((img_on-img_off), -clip_value, clip_value)
+    else:
+        integrated_img = (img_on-img_off)
+    return integrated_img.astype(np.int16)
 
 
 def _flush_q(q):
