@@ -15,7 +15,7 @@ from spiker.data import ddd17
 
 # load and process data
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-down-1-export-experimental.hdf5")
+                         "highway-up-1-export-experimental.hdf5")
 frames, steering = ddd17.prepare_train_data(data_path)
 frames = frames[50:-350]/255.
 frames -= np.mean(frames, keepdims=True)
@@ -29,8 +29,8 @@ Y_test = steering[num_train:]
 
 # load model
 model_path = os.path.join(
-    spiker.SPIKER_EXPS, "resnet-steering-3-5",
-    "resnet-steering-3-5-104-0.01.hdf5")
+    spiker.SPIKER_EXPS, "resnet-steering-hw-up-1-3-5",
+    "resnet-steering-hw-up-1-3-5-141-0.31.hdf5")
 model = utils.keras_load_model(model_path)
 
 # generate prediction
@@ -45,13 +45,13 @@ plt.title("APS and DVS combined.")
 plt.xlabel("frames")
 plt.ylabel("radius")
 plt.legend()
-plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-dvs-prediction.png"),
+plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-dvs-hw-1-prediction.png"),
             dpi=200, format="png")
 
 #  load model
 model_path = os.path.join(
-    spiker.SPIKER_EXPS, "resnet-steering-aps-3-5",
-    "resnet-steering-aps-3-5-73-0.01.hdf5")
+    spiker.SPIKER_EXPS, "resnet-steering-hw-up-1-aps-3-5",
+    "resnet-steering-hw-up-1-aps-3-5-52-0.42.hdf5")
 model = utils.keras_load_model(model_path)
 aps_prediction = utils.keras_predict_batch(
     model, X_test[..., 1][..., np.newaxis], verbose=True)
@@ -63,13 +63,13 @@ plt.title("APS only.")
 plt.xlabel("frames")
 plt.ylabel("radius")
 plt.legend()
-plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-prediction.png"),
+plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "aps-hw-1-prediction.png"),
             dpi=200, format="png")
 
 # load model
 model_path = os.path.join(
-    spiker.SPIKER_EXPS, "resnet-steering-dvs-3-5",
-    "resnet-steering-dvs-3-5-132-0.04.hdf5")
+    spiker.SPIKER_EXPS, "resnet-steering-hw-up-1-dvs-3-5",
+    "resnet-steering-hw-up-1-dvs-3-5-33-0.36.hdf5")
 model = utils.keras_load_model(model_path)
 aps_prediction = utils.keras_predict_batch(
     model, X_test[..., 0][..., np.newaxis], verbose=True)
@@ -81,5 +81,5 @@ plt.title("DVS only.")
 plt.xlabel("frames")
 plt.ylabel("radius")
 plt.legend()
-plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "dvs-prediction.png"),
+plt.savefig(os.path.join(spiker.SPIKER_EXTRA, "dvs-hw-1-prediction.png"),
             dpi=200, format="png")
