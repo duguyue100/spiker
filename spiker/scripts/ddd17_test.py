@@ -27,6 +27,44 @@ file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-up-2.hdf5")
 
+# CVPR data
+# Night 1
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "jul09/rec1499656391.hdf5")
+# Night 2
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "jul09/rec1499657850.hdf5")
+# Night 3
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug01/rec1501649676.hdf5")
+# Night 4
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug01/rec1501650719.hdf5")
+# Night 5
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug05/rec1501994881.hdf5")
+# Night 6
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug09/rec1502336427.hdf5")
+# Night 7
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug09/rec1502337436.hdf")
+# Day 1
+
+# Day 2
+
+# Day 3
+
+# Day 4
+
+# Day 5
+
+# Day 6
+
+# Day 7
+
+# Day 8
+
 binsize = 0.1
 fixed_dt = binsize > 0
 clip_value = 8
@@ -51,7 +89,7 @@ dtypes = {k: float for k in ddd17.EXPORT_DATA.union({'timestamp'})}
 dtypes['aps_frame'] = (np.uint8, data.DAVIS346_SHAPE)
 dtypes['dvs_frame'] = (np.int16, data.DAVIS346_SHAPE)
 
-outfile = file_name[:-5] + '-export-experimental.hdf5'
+outfile = file_name[:-5] + '-export.hdf5'
 
 f_out = ddd17.HDF5(outfile, dtypes, mode='w',
                    chunksize=8, compression='gzip')
@@ -106,8 +144,8 @@ while merged.has_data and sys_ts <= time_stop*1e-6:
         ddd17.unpack_data(d)
         times = d['data'][:, 0] * 1e-6 + t_offset
         num_evts = d['data'].shape[0]
-        #  print ("Number of events in this frame: %d"
-        #         % (num_evts))
+        print ("Number of events in this frame: %d"
+               % (num_evts))
         offset = 0
         if fixed_dt:
             # fixed time interval bin mode
