@@ -15,7 +15,7 @@ import spiker
 from spiker.data import ddd17
 
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "jul09/rec1499656391-export.hdf5")
+                         "aug09/rec1502337436-export.hdf5")
 
 #  frames, steering = ddd17.prepare_train_data(data_path,
 #                                              #  target_size=None,
@@ -23,7 +23,7 @@ data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
 steering = ddd17.prepare_train_data(data_path,
                                     y_name="steering",
                                     only_y=True,
-                                    frame_cut=[2000, 4000])
+                                    frame_cut=[100, 400])
 
 #  print (frames.shape)
 print (steering.shape)
