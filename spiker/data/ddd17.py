@@ -89,8 +89,9 @@ etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 
 
 def prepare_train_data(file_name, target_size=(64, 86),
-                       y_name="steering",
-                       num_samples=None, verbose=True):
+                       y_name="steering", only_y=False,
+                       num_samples=None, verbose=True,
+                       frame_cut=None):
     """Prepare training data from HDF5.
 
     Only for steering prediction.
@@ -100,12 +101,26 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     data_file = h5py.File(file_name, "r")
 
-    #  dvs_frames = (data_file["dvs_frame"][()]+127).astype("uint8")
-    dvs_frames = data_file["dvs_frame"][()]
+    if frame_cut is None:
+        frame_cut = [0, 1]
+
+    if y_name == "steering":
+        Y = data_file["steering_wheel_angle"][()][..., np.newaxis][
+            frame_cut[0]:-frame_cut[1]]
+        Y = Y/180.*np.pi
+    elif y_name == "accel":
+        Y = data_file["accelerator_pedal_position"][()][..., np.newaxis][
+            frame_cut[0]:-frame_cut[1]]/100.
+    elif y_name == "brake":
+        Y = data_file["brake_pedal_status"][()][..., np.newaxis][
+            frame_cut[0]:-frame_cut[1]]
+    if only_y is True:
+        return Y
+
+    dvs_frames = data_file["dvs_frame"][()][frame_cut[0]:-frame_cut[1]]
     dvs_frames = (dvs_frames*(int(127./np.max(np.abs(dvs_frames)))) +
                   127).astype("uint8")
-    #  dvs_frames = (data_file["dvs_frame"][()]*8+127).astype("uint8")
-    aps_frames = data_file["aps_frame"][()]
+    aps_frames = data_file["aps_frame"][()][frame_cut[0]:-frame_cut[1]]
 
     data_shape = dvs_frames.shape
     num_data = data_shape[0] if num_samples is None else num_samples
@@ -125,15 +140,6 @@ def prepare_train_data(file_name, target_size=(64, 86),
         if verbose is True:
             if (idx+1) % 100 == 0:
                 print ("[MESSAGE] %d images processed." % (idx+1))
-
-    if y_name == "steering":
-        Y = data_file["steering_wheel_angle"][()][..., np.newaxis]
-        # TODO: check if this make sense
-        Y = np.pi/2 - Y / 180. * np.pi
-    elif y_name == "accel":
-        Y = data_file["accelerator_pedal_position"][()][..., np.newaxis]
-    elif y_name == "brake":
-        Y = data_file["brake_pedal_status"][()][..., np.newaxis]
 
     data_file.close()
 

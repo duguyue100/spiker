@@ -1,5 +1,5 @@
 {
-    "model_name": "steering-night-1-full",
+    "model_name": "accel-night-1-full",
     "data_name": "jul09/rec1499656391-export.hdf5",
     "channel_id": 2,
     "stages": 3,

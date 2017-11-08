@@ -1,4 +1,4 @@
-"""ResNets for Steering Prediction.
+"""ResNets for Accelerator Pedal Position Prediction.
 
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
@@ -20,7 +20,7 @@ from spiker import log
 from spiker.models import resnet
 from spiker.data import ddd17
 
-exp = Experiment("ResNet - Steering - Experiment")
+exp = Experiment("ResNet - Accelerator - Experiment")
 
 exp.add_config({
     "model_name": "",  # the model name
@@ -65,7 +65,7 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
     log.log("[MESSAGE] Frame cut: first at %d, last at %d"
             % (frame_cut[0], -frame_cut[1]))
     frames, steering = ddd17.prepare_train_data(
-        data_path, y_name="steering",
+        data_path, y_name="accel",
         frame_cut=frame_cut)
     frames /= 255.
     frames -= np.mean(frames, keepdims=True)

@@ -1,4 +1,4 @@
-"""ResNets for Steering Prediction.
+"""ResNets for Brake Pedal Status Prediction.
 
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
@@ -14,13 +14,14 @@ from keras import optimizers
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import LearningRateScheduler
 from keras.callbacks import CSVLogger
+from keras.callbacks import EarlyStopping
 
 import spiker
 from spiker import log
 from spiker.models import resnet
 from spiker.data import ddd17
 
-exp = Experiment("ResNet - Steering - Experiment")
+exp = Experiment("ResNet - Brake - Experiment")
 
 exp.add_config({
     "model_name": "",  # the model name
@@ -65,7 +66,7 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
     log.log("[MESSAGE] Frame cut: first at %d, last at %d"
             % (frame_cut[0], -frame_cut[1]))
     frames, steering = ddd17.prepare_train_data(
-        data_path, y_name="steering",
+        data_path, y_name="brake",
         frame_cut=frame_cut)
     frames /= 255.
     frames -= np.mean(frames, keepdims=True)
@@ -95,7 +96,7 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
         batch_size=batch_size,
         filter_list=filter_list, kernel_size=(3, 3),
         output_dim=1, stages=stages, blocks=blocks,
-        bottleneck=False, network_type="regress")
+        bottleneck=False, network_type="binary")
 
     model.summary()
     plot_model(model, to_file=model_pic, show_shapes=True,
@@ -112,23 +113,25 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
     #          return float(0.1)
 
     #  sgd = optimizers.SGD(lr=0.0, momentum=0.9, nesterov=True)
-    model.compile(loss='mean_squared_error',
+    model.compile(loss='binary_crossentropy',
                   optimizer="adam",
-                  metrics=["mse"])
+                  metrics=["binary_accuracy"])
     print ("[MESSAGE] Model is compiled.")
     model_file = model_file_base + \
-        "-{epoch:02d}-{val_mean_squared_error:.2f}.hdf5"
+        "-{epoch:02d}-{val_binary_accuracy:.2f}.hdf5"
     checkpoint = ModelCheckpoint(model_file,
-                                 monitor='val_mean_squared_error',
+                                 monitor='val_binary_accuracy',
                                  verbose=1,
                                  save_best_only=True,
-                                 mode='min')
+                                 mode='max')
     #  scheduler = LearningRateScheduler(step_decay)
 
     csv_his_log = os.path.join(model_path, "csv_history.log")
     csv_logger = CSVLogger(csv_his_log, append=True)
 
-    callbacks_list = [checkpoint, csv_logger]
+    early_stop = EarlyStopping(monitor="val_loss", patience=20, verbose=1)
+
+    callbacks_list = [checkpoint, csv_logger, early_stop]
 
     # training
     model.fit(

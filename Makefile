@@ -22,6 +22,10 @@ experimental:
 night-1-full:
 	# steering
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-night-1-full.json
+	# accel
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_accel.py with ./spiker/exps/configs/cvprexps/accel-night-1-full.json
+	# brake
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_brake.py with ./spiker/exps/configs/cvprexps/brake-night-1-full.json
 
 pycaer-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/pycaer_test.py
