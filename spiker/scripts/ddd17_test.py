@@ -29,41 +29,50 @@ file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 
 # CVPR data
 # Night 1
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "jul09/rec1499656391.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul09/rec1499656391.hdf5")
 # Night 2
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "jul09/rec1499657850.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul09/rec1499657850.hdf5")
 # Night 3
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug01/rec1501649676.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug01/rec1501649676.hdf5")
 # Night 4
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug01/rec1501650719.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug01/rec1501650719.hdf5")
 # Night 5
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug05/rec1501994881.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug05/rec1501994881.hdf5")
 # Night 6
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug09/rec1502336427.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug09/rec1502336427.hdf5")
 # Night 7
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug09/rec1502337436.hdf")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug09/rec1502337436.hdf5")
 # Day 1
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul16/rec1500220388.hdf5")
 # Day 2
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul18/rec1500383971.hdf5")
 # Day 3
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul18/rec1500402142.hdf5")
 # Day 4
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul28/rec1501288723.hdf5")
 # Day 5
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul29/rec1501349894.hdf5")
 # Day 6
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug01/rec1501614399.hdf5")
 # Day 7
-
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug02/rec1501705481.hdf5")
 # Day 8
+file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                         "aug15/rec1502825681.hdf5")
 
 binsize = 0.1
 fixed_dt = binsize > 0
