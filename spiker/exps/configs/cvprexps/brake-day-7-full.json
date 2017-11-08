@@ -1,0 +1,13 @@
+{
+    "model_name": "brake-day-7-full",
+    "data_name": "aug02/rec1501705481-export.hdf5",
+    "channel_id": 2,
+    "stages": 3,
+    "blocks": 5,
+    "filter_list": [[16, 16, 16],
+                    [32, 32, 32],
+                    [64, 64, 64]],
+    "nb_epoch": 200,
+    "batch_size": 64,
+    "frame_cut": [500, 1000]
+}
