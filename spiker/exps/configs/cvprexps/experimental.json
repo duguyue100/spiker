@@ -1,6 +1,7 @@
 {
-    "model_name": "resnet-steering-hw-1-3-5",
+    "model_name": "experimental-debug",
     "data_name": "highway-down-1-export-experimental.hdf5",
+    "channel_id": 2,
     "stages": 3,
     "blocks": 5,
     "filter_list": [[16, 16, 16],

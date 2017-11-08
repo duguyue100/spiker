@@ -14,6 +14,15 @@ clean:
 
 run:
 
+# CVPR Experiments
+
+experimental:
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/experimental.json
+
+night-1-full:
+	# steering
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-night-1-full.json
+
 pycaer-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/pycaer_test.py
 

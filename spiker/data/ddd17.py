@@ -89,6 +89,7 @@ etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 
 
 def prepare_train_data(file_name, target_size=(64, 86),
+                       y_name="steering",
                        num_samples=None, verbose=True):
     """Prepare training data from HDF5.
 
@@ -125,13 +126,18 @@ def prepare_train_data(file_name, target_size=(64, 86),
             if (idx+1) % 100 == 0:
                 print ("[MESSAGE] %d images processed." % (idx+1))
 
-    steering = data_file["steering_wheel_angle"][()][..., np.newaxis]
-    # TODO: check if this make sense
-    steering = np.pi/2 - steering / 180. * np.pi
+    if y_name == "steering":
+        Y = data_file["steering_wheel_angle"][()][..., np.newaxis]
+        # TODO: check if this make sense
+        Y = np.pi/2 - Y / 180. * np.pi
+    elif y_name == "accel":
+        Y = data_file["accelerator_pedal_position"][()][..., np.newaxis]
+    elif y_name == "brake":
+        Y = data_file["brake_pedal_status"][()][..., np.newaxis]
 
     data_file.close()
 
-    return frames.astype("float32"), steering
+    return frames.astype("float32"), Y
 
 
 def filter_frame(d):

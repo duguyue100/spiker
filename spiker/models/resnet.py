@@ -102,8 +102,12 @@ def resnet_block(input_tensor, kernel_size,
 
 
 def resnet_builder(model_name, input_shape, batch_size, filter_list,
-                   kernel_size, output_dim, stages, blocks, bottleneck=True):
-    """Build ResNet."""
+                   kernel_size, output_dim, stages, blocks, bottleneck=True,
+                   network_type="regress"):
+    """Build ResNet.
+
+    TODO: add more flexiblities to initialization, regularization, etc
+    """
     bn_axis = 3
 
     # prepare input
@@ -145,6 +149,12 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
               kernel_regularizer=l2(0.0001),
               bias_initializer="zeros",
               name="output")(x)
+
+    # for classification
+    if network_type == "class":
+        x = Activation("softmax")(x)
+    elif network_type == "binary":
+        x = Activation("sigmoid")(x)
 
     model = Model(img_input, x, name=model_name)
 
