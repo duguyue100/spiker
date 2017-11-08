@@ -22,8 +22,8 @@ from spiker import log
 #                           "highway-down-2.hdf5")
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-down-1.hdf5")
-file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "highway-up-1.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "highway-up-1.hdf5")
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "highway-up-2.hdf5")
 
