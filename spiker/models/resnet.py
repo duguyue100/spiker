@@ -82,7 +82,8 @@ def resnet_block(input_tensor, kernel_size,
                bias_initializer="zeros",
                padding="same", name=conv_name_base+"2b")(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base+"2b")(x)
-    x = Activation("relu")(x)
+    if bottleneck is True:
+        x = Activation("relu")(x)
 
     # third transition
     if bottleneck is True:
@@ -119,12 +120,12 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
     x = Activation("relu")(x)
 
     # first stage
-    for block_idx in range(blocks):
-        x = resnet_block(x, kernel_size, filter_list[0],
-                         1, str(block_idx+1), strides=(1, 1),
-                         block_type="identity", bottleneck=bottleneck)
+    #  for block_idx in range(blocks):
+    #      x = resnet_block(x, kernel_size, filter_list[0],
+    #                       1, str(block_idx+1), strides=(1, 1),
+    #                       block_type="identity", bottleneck=bottleneck)
 
-    for stage_idx in range(1, stages):
+    for stage_idx in range(0, stages):
         # input block
         x = resnet_block(x, kernel_size, filter_list[stage_idx],
                          stage_idx+1, "1", strides=(2, 2),
