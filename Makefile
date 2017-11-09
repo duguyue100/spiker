@@ -331,6 +331,9 @@ ddd17-export-video:
 ddd17-create-configs:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_create_configs.py
 
+cvpr-create-figures:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/cvpr_create_figures.py
+
 # Experiments
 
 resnet-steering-3-5:
