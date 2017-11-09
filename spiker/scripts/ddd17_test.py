@@ -70,9 +70,11 @@ from spiker import log
 # Day 7
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "aug02/rec1501705481.hdf5")
-# Day 8
 file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug15/rec1502825681.hdf5")
+                         "aug13/rec1502667889.hdf5")
+# Day 8
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug15/rec1502825681.hdf5")
 
 binsize = 0.1
 fixed_dt = binsize > 0
