@@ -114,6 +114,8 @@ def prepare_train_data(file_name, target_size=(64, 86),
     elif y_name == "brake":
         Y = data_file["brake_pedal_status"][()][..., np.newaxis][
             frame_cut[0]:-frame_cut[1]]
+    num_data = Y.shape[0] if num_samples is None else num_samples
+    Y = Y[:num_data]
     if only_y is True:
         return Y
 
@@ -123,7 +125,7 @@ def prepare_train_data(file_name, target_size=(64, 86),
     aps_frames = data_file["aps_frame"][()][frame_cut[0]:-frame_cut[1]]
 
     data_shape = dvs_frames.shape
-    num_data = data_shape[0] if num_samples is None else num_samples
+    #  num_data = data_shape[0] if num_samples is None else num_samples
     if target_size is not None:
         frames = np.zeros((num_data,)+target_size+(2,))
     else:
