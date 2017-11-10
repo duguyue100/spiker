@@ -145,186 +145,160 @@ elif option == "get-aps-results":
     print ("-"*30)
     print ((brake_day_sum+brake_night_sum)/15)
 elif option == "get-loss-curves":
-    sensor_modes = ["full", "dvs", "aps"]
-    exps_dict = OrderedDict()
+    # collect curves
+    for env in ["night", "day"]:
+        env_range = 7 if env == "night" else 8
+        for env_idx in xrange(env_range):
+            # create grid specs
+            fig = plt.figure(figsize=(16, 24))
+            outer_grid = gridspec.GridSpec(3, 1, hspace=0.4)
+            grid_idx = {"steering": 0, "accel": 1, "brake": 2}
+            log_name = env+"-%d" % (env_idx+1)
 
-    for sensor_mode in sensor_modes:
-        # read logs
-        steer_night_logs = get_log_file_dict("night", sensor_mode, "steering")
-        accel_night_logs = get_log_file_dict("night", sensor_mode, "accel")
-        brake_night_logs = get_log_file_dict("night", sensor_mode, "brake")
-        steer_day_logs = get_log_file_dict("day", sensor_mode, "steering")
-        accel_day_logs = get_log_file_dict("day", sensor_mode, "accel")
-        brake_day_logs = get_log_file_dict("day", sensor_mode, "brake")
+            for task in ["steering", "accel", "brake"]:
+                inner_grid = gridspec.GridSpecFromSubplotSpec(
+                    2, 2, subplot_spec=outer_grid[grid_idx[task]],
+                    wspace=0.3, hspace=0.8)
+                # read log
+                full_log_name = task+"-"+env+"-%d-" % (env_idx+1)+"full"
+                dvs_log_name = task+"-"+env+"-%d-" % (env_idx+1)+"dvs"
+                aps_log_name = task+"-"+env+"-%d-" % (env_idx+1)+"aps"
+                full_log_file = join(spiker.SPIKER_EXPS, full_log_name,
+                                     "csv_history.log")
+                dvs_log_file = join(spiker.SPIKER_EXPS, dvs_log_name,
+                                    "csv_history.log")
+                aps_log_file = join(spiker.SPIKER_EXPS, aps_log_name,
+                                    "csv_history.log")
+                full_log_dict = utils.parse_csv_log(full_log_file)
+                dvs_log_dict = utils.parse_csv_log(dvs_log_file)
+                aps_log_dict = utils.parse_csv_log(aps_log_file)
+                # training loss for the experiment
+                full_train_loss = full_log_dict["loss"]
+                dvs_train_loss = dvs_log_dict["loss"]
+                aps_train_loss = aps_log_dict["loss"]
+                # testing loss for the experiment
+                full_test_loss = full_log_dict["val_loss"]
+                dvs_test_loss = dvs_log_dict["val_loss"]
+                aps_test_loss = aps_log_dict["val_loss"]
 
-        exps_logs = OrderedDict(
-            steer_night_logs.items()+steer_day_logs.items() +
-            accel_night_logs.items()+accel_day_logs.items() +
-            brake_night_logs.items()+brake_day_logs.items())
+                if task == "brake":
+                    # training acc for the experiment
+                    full_train_mse = full_log_dict["binary_accuracy"]*100.
+                    dvs_train_mse = dvs_log_dict["binary_accuracy"]*100.
+                    aps_train_mse = aps_log_dict["binary_accuracy"]*100.
+                    # testing mse for the experiment
+                    full_test_mse = \
+                        full_log_dict["val_binary_accuracy"]*100.
+                    dvs_test_mse = dvs_log_dict["val_binary_accuracy"]*100.
+                    aps_test_mse = aps_log_dict["val_binary_accuracy"]*100.
+                else:
+                    # training mse for the experiment
+                    full_train_mse = full_log_dict["mean_squared_error"]
+                    dvs_train_mse = dvs_log_dict["mean_squared_error"]
+                    aps_train_mse = aps_log_dict["mean_squared_error"]
+                    # testing mse for the experiment
+                    full_test_mse = full_log_dict["val_mean_squared_error"]
+                    dvs_test_mse = dvs_log_dict["val_mean_squared_error"]
+                    aps_test_mse = aps_log_dict["val_mean_squared_error"]
 
-        for env in ["night", "day"]:
-            env_range = 7 if env == "night" else 8
-            for env_idx in xrange(env_range):
-                for task in ["steering", "accel", "brake"]:
-                    log_name = task+"-"+env+"-%d-" % (env_idx+1)+sensor_mode
-                    if log_name in exps_logs:
-                        # load history
-                        log_file = join(spiker.SPIKER_EXPS, log_name,
-                                        "csv_history.log")
-                        if isfile(log_file):
-                            csv_log = utils.parse_csv_log(log_file)
-                            # place the csv log to the right node
+                full_axis = range(1, full_train_loss.shape[0]+1)
+                dvs_axis = range(1, dvs_train_loss.shape[0]+1)
+                aps_axis = range(1, aps_train_loss.shape[0]+1)
 
-                            exps_dict[
-                                env+"-%d" % (env_idx)][
-                                    task][sensor_mode] = csv_log
+                # plot train loss figure
+                ax_trloss = plt.Subplot(fig, inner_grid[0, 0])
+                fig.add_subplot(ax_trloss)
+                ax_trloss.plot(
+                    full_axis, full_train_loss, label="DVS+APS",
+                    color="#08306b", linestyle="-", linewidth=2)
+                ax_trloss.plot(
+                    dvs_axis, dvs_train_loss, label="DVS",
+                    color="#7f2704", linestyle="-", linewidth=2)
+                ax_trloss.plot(
+                    aps_axis, aps_train_loss, label="APS",
+                    color="#3f007d", linestyle="-", linewidth=2)
+                plt.xlabel("epochs", fontsize=15)
+                plt.ylabel("loss", fontsize=15)
+                plt.title("Training Loss ("+task+")")
+                plt.xticks(fontsize=15)
+                plt.yticks(fontsize=15)
+                plt.grid(linestyle="-.")
+                #  plt.legend(fontsize=15, shadow=True)
+                plt.legend(shadow=True)
 
-        # collect curves
-        for env in ["night", "day"]:
-            env_range = 7 if env == "night" else 8
-            for env_idx in xrange(env_range):
-                # create grid specs
-                fig = plt.figure(figsize=(12, 8))
-                outer_grid = gridspec.GridSpec(3, 1, hspace=0.2)
-                grid_idx = {"steering": 0, "accel": 1, "brake": 2}
+                # plot test loss figure
+                ax_teloss = plt.Subplot(fig, inner_grid[0, 1])
+                fig.add_subplot(ax_teloss)
+                ax_teloss.plot(
+                    full_axis, full_test_loss, label="DVS+APS",
+                    color="#08306b", linestyle="--", linewidth=2)
+                ax_teloss.plot(
+                    dvs_axis, dvs_test_loss, label="DVS",
+                    color="#7f2704", linestyle="--", linewidth=2)
+                ax_teloss.plot(
+                    aps_axis, aps_test_loss, label="APS",
+                    color="#3f007d", linestyle="--", linewidth=2)
+                plt.xlabel("epochs", fontsize=15)
+                plt.ylabel("loss", fontsize=15)
+                plt.title("Testing Loss ("+task+")")
+                plt.xticks(fontsize=15)
+                plt.yticks(fontsize=15)
+                plt.grid(linestyle="-.")
+                #  plt.legend(fontsize=15, shadow=True)
+                plt.legend(shadow=True)
 
-                for task in ["steering", "accel", "brake"]:
-                    inner_grid = gridspec.GridSpecFromSubplotSpec(
-                        2, 2, subplot_spec=grid_idx[task],
-                        wspace=0.1, hspace=0.1)
-                    # read log
-                    full_log_dict = exps_dict[
-                        env+"-%d" % (env_idx)][
-                            task]["full"]
-                    dvs_log_dict = exps_dict[
-                        env+"-%d" % (env_idx)][
-                            task]["dvs"]
-                    aps_log_dict = exps_dict[
-                        env+"-%d" % (env_idx)][
-                            task]["aps"]
-                    # training loss for the experiment
-                    full_train_loss = full_log_dict["loss"]
-                    dvs_train_loss = dvs_log_dict["loss"]
-                    aps_train_loss = aps_log_dict["loss"]
-                    # testing loss for the experiment
-                    full_test_loss = full_log_dict["val_loss"]
-                    dvs_test_loss = dvs_log_dict["val_loss"]
-                    aps_test_loss = aps_log_dict["val_loss"]
+                # plot train mse figure
+                ax_trmse = plt.Subplot(fig, inner_grid[1, 0])
+                fig.add_subplot(ax_trmse)
+                ax_trmse.plot(
+                    full_axis, full_train_mse, label="DVS+APS",
+                    color="#08306b", linestyle="-", linewidth=2)
+                ax_trmse.plot(
+                    dvs_axis, dvs_train_mse, label="DVS",
+                    color="#7f2704", linestyle="-", linewidth=2)
+                ax_trmse.plot(
+                    aps_axis, aps_train_mse, label="APS",
+                    color="#3f007d", linestyle="-", linewidth=2)
+                plt.xlabel("epochs", fontsize=15)
+                if task == "brake":
+                    plt.ylabel("accuracy (%)", fontsize=15)
+                    plt.title("Training Accuracy ("+task+")")
+                else:
+                    plt.ylabel("mse", fontsize=15)
+                    plt.title("Training MSE ("+task+")")
+                plt.xticks(fontsize=15)
+                plt.yticks(fontsize=15)
+                plt.grid(linestyle="-.")
+                #  plt.legend(fontsize=15, shadow=True)
+                plt.legend(shadow=True)
 
-                    if task == "brake":
-                        # training acc for the experiment
-                        full_train_mse = full_log_dict["binary_accuracy"]*100.
-                        dvs_train_mse = dvs_log_dict["binary_accuracy"]*100.
-                        aps_train_mse = aps_log_dict["binary_accuracy"]*100.
-                        # testing mse for the experiment
-                        full_test_mse = \
-                            full_log_dict["val_binary_accuracy"]*100.
-                        dvs_test_mse = dvs_log_dict["val_binary_accuracy"]*100.
-                        aps_test_mse = aps_log_dict["val_binary_accuracy"]*100.
-                    else:
-                        # training mse for the experiment
-                        full_train_mse = full_log_dict["mean_squared_error"]
-                        dvs_train_mse = dvs_log_dict["mean_squared_error"]
-                        aps_train_mse = aps_log_dict["mean_squared_error"]
-                        # testing mse for the experiment
-                        full_test_mse = full_log_dict["val_mean_squared_error"]
-                        dvs_test_mse = dvs_log_dict["val_mean_squared_error"]
-                        aps_test_mse = aps_log_dict["val_mean_squared_error"]
+                # plot test mse figure
+                ax_temse = plt.Subplot(fig, inner_grid[1, 1])
+                fig.add_subplot(ax_temse)
+                ax_temse.plot(
+                    full_axis, full_test_mse, label="DVS+APS",
+                    color="#08306b", linestyle="--", linewidth=2)
+                ax_temse.plot(
+                    dvs_axis, dvs_test_mse, label="DVS",
+                    color="#7f2704", linestyle="--", linewidth=2)
+                ax_temse.plot(
+                    aps_axis, aps_test_mse, label="APS",
+                    color="#3f007d", linestyle="--", linewidth=2)
+                plt.xlabel("epochs", fontsize=15)
+                if task == "brake":
+                    plt.ylabel("accuracy (%)", fontsize=15)
+                    plt.title("Testing Accuracy ("+task+")")
+                else:
+                    plt.ylabel("mse", fontsize=15)
+                    plt.title("Testing MSE ("+task+")")
+                plt.xticks(fontsize=15)
+                plt.yticks(fontsize=15)
+                plt.grid(linestyle="-.")
+                #  plt.legend(fontsize=15, shadow=True)
+                plt.legend(shadow=True)
 
-                    full_axis = range(1, full_train_loss.shape[0]+1)
-                    dvs_axis = range(1, dvs_train_loss.shape[0]+1)
-                    aps_axis = range(1, aps_train_loss.shape[0]+1)
-
-                    # plot train loss figure
-                    ax_trloss = plt.Subplot(fig, inner_grid[0, 0])
-                    fig.add_subplot(ax_trloss)
-                    ax_trloss.plot(
-                        full_axis, full_train_loss, label="DVS+APS",
-                        color="#08306b", linestyle="-", linewidth=2)
-                    ax_trloss.plot(
-                        dvs_axis, dvs_train_loss, label="DVS",
-                        color="#7f2704", linestyle="-", linewidth=2)
-                    ax_trloss.plot(
-                        aps_axis, aps_train_loss, label="APS",
-                        color="#3f007d", linestyle="-", linewidth=2)
-                    plt.xlabel("epochs", fontsize=15)
-                    plt.ylabel("loss", fontsize=15)
-                    plt.title("Training Loss")
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
-                    plt.grid(linestyle="-.")
-                    plt.legend(fontsize=15, shadow=True)
-
-                    # plot test loss figure
-                    ax_teloss = plt.Subplot(fig, inner_grid[0, 1])
-                    fig.add_subplot(ax_teloss)
-                    ax_teloss.plot(
-                        full_axis, full_test_loss, label="DVS+APS",
-                        color="#08306b", linestyle="-", linewidth=2)
-                    ax_teloss.plot(
-                        dvs_axis, dvs_test_loss, label="DVS",
-                        color="#7f2704", linestyle="-", linewidth=2)
-                    ax_teloss.plot(
-                        aps_axis, aps_test_loss, label="APS",
-                        color="#3f007d", linestyle="-", linewidth=2)
-                    plt.xlabel("epochs", fontsize=15)
-                    plt.ylabel("loss", fontsize=15)
-                    plt.title("Testing Loss")
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
-                    plt.grid(linestyle="-.")
-                    plt.legend(fontsize=15, shadow=True)
-
-                    # plot train mse figure
-                    ax_trmse = plt.Subplot(fig, inner_grid[1, 0])
-                    fig.add_subplot(ax_trmse)
-                    ax_trmse.plot(
-                        full_axis, full_train_mse, label="DVS+APS",
-                        color="#08306b", linestyle="--", linewidth=2)
-                    ax_trmse.plot(
-                        dvs_axis, dvs_train_mse, label="DVS",
-                        color="#7f2704", linestyle="--", linewidth=2)
-                    ax_trmse.plot(
-                        aps_axis, aps_train_mse, label="APS",
-                        color="#3f007d", linestyle="--", linewidth=2)
-                    plt.xlabel("epochs", fontsize=15)
-                    if task == "brake":
-                        plt.ylabel("accuracy (%)", fontsize=15)
-                        plt.title("Training Accuracy")
-                    else:
-                        plt.ylabel("mse", fontsize=15)
-                        plt.title("Training MSE")
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
-                    plt.grid(linestyle="-.")
-                    plt.legend(fontsize=15, shadow=True)
-
-                    # plot test mse figure
-                    ax_temse = plt.Subplot(fig, inner_grid[1, 1])
-                    fig.add_subplot(ax_temse)
-                    ax_temse.plot(
-                        full_axis, full_test_mse, label="DVS+APS",
-                        color="#08306b", linestyle="--", linewidth=2)
-                    ax_temse.plot(
-                        dvs_axis, dvs_test_mse, label="DVS",
-                        color="#7f2704", linestyle="--", linewidth=2)
-                    ax_temse.plot(
-                        aps_axis, aps_test_mse, label="APS",
-                        color="#3f007d", linestyle="--", linewidth=2)
-                    plt.xlabel("epochs", fontsize=15)
-                    if task == "brake":
-                        plt.ylabel("accuracy (%)", fontsize=15)
-                        plt.title("Testing Accuracy")
-                    else:
-                        plt.ylabel("mse", fontsize=15)
-                        plt.title("Testing MSE")
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
-                    plt.grid(linestyle="-.")
-                    plt.legend(fontsize=15, shadow=True)
-
-                    # save figure
-                    plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
-                                     log_name+".pdf"),
-                                dpi=600, format="pdf",
-                                bbox="tight", pad_inches=0.5)
+            # save figure
+            plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
+                             log_name+".pdf"),
+                        dpi=600, format="pdf",
+                        bbox="tight", pad_inches=0.5)
