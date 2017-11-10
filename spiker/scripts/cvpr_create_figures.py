@@ -187,10 +187,6 @@ elif option == "get-loss-curves":
                 fig = plt.figure(figsize=(12, 8))
                 outer_grid = gridspec.GridSpec(3, 1, hspace=0.2)
                 grid_idx = {"steering": 0, "accel": 1, "brake": 2}
-                grid_title = {
-                    "steering": "Prediction of Steering Wheel Angles",
-                    "accel": "Prediction of Accelerator Pedal Position",
-                    "brake": "Prediction of Brake Pedal Status"}
 
                 for task in ["steering", "accel", "brake"]:
                     inner_grid = gridspec.GridSpecFromSubplotSpec(
@@ -240,7 +236,8 @@ elif option == "get-loss-curves":
                     aps_axis = range(1, aps_train_loss.shape[0]+1)
 
                     # plot train loss figure
-                    ax_trloss = plt.subplot(fig, inner_grid[0, 0])
+                    ax_trloss = plt.Subplot(fig, inner_grid[0, 0])
+                    fig.add_subplot(ax_trloss)
                     ax_trloss.plot(
                         full_axis, full_train_loss, label="DVS+APS",
                         color="#08306b", linestyle="-", linewidth=2)
@@ -259,7 +256,8 @@ elif option == "get-loss-curves":
                     plt.legend(fontsize=15, shadow=True)
 
                     # plot test loss figure
-                    ax_teloss = plt.subplot(fig, inner_grid[0, 1])
+                    ax_teloss = plt.Subplot(fig, inner_grid[0, 1])
+                    fig.add_subplot(ax_teloss)
                     ax_teloss.plot(
                         full_axis, full_test_loss, label="DVS+APS",
                         color="#08306b", linestyle="-", linewidth=2)
@@ -278,7 +276,8 @@ elif option == "get-loss-curves":
                     plt.legend(fontsize=15, shadow=True)
 
                     # plot train mse figure
-                    ax_trmse = plt.subplot(fig, inner_grid[1, 0])
+                    ax_trmse = plt.Subplot(fig, inner_grid[1, 0])
+                    fig.add_subplot(ax_trmse)
                     ax_trmse.plot(
                         full_axis, full_train_mse, label="DVS+APS",
                         color="#08306b", linestyle="--", linewidth=2)
@@ -301,7 +300,8 @@ elif option == "get-loss-curves":
                     plt.legend(fontsize=15, shadow=True)
 
                     # plot test mse figure
-                    ax_temse = plt.subplot(fig, inner_grid[1, 1])
+                    ax_temse = plt.Subplot(fig, inner_grid[1, 1])
+                    fig.add_subplot(ax_temse)
                     ax_temse.plot(
                         full_axis, full_test_mse, label="DVS+APS",
                         color="#08306b", linestyle="--", linewidth=2)
@@ -322,8 +322,6 @@ elif option == "get-loss-curves":
                     plt.yticks(fontsize=15)
                     plt.grid(linestyle="-.")
                     plt.legend(fontsize=15, shadow=True)
-
-                    fig.suptitle(grid_title[task], size=20)
 
                     # save figure
                     plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
