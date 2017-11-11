@@ -9,5 +9,5 @@
                     [64, 64, 64]],
     "nb_epoch": 200,
     "batch_size": 64,
-    "frame_cut": [200, 800]
+    "frame_cut": [500, 1000]
 }

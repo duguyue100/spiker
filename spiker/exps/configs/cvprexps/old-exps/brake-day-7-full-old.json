@@ -1,6 +1,6 @@
 {
-    "model_name": "accel-day-2-full",
-    "data_name": "jul18/rec1500383971-export.hdf5",
+    "model_name": "brake-day-7-full",
+    "data_name": "aug02/rec1501705481-export.hdf5",
     "channel_id": 2,
     "stages": 3,
     "blocks": 5,

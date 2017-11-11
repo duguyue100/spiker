@@ -1,1 +1,1 @@
-{"frame_cut": [500, 1000], "blocks": 5, "nb_epoch": 200, "data_name": "aug02/rec1501705481-export.hdf5", "filter_list": [[16, 16, 16], [32, 32, 32], [64, 64, 64]], "channel_id": 0, "batch_size": 64, "stages": 3, "model_name": "brake-day-7-dvs"}
+{"frame_cut": [500, 1000], "blocks": 5, "nb_epoch": 200, "data_name": "aug08/rec1502241196-export.hdf5", "filter_list": [[16, 16, 16], [32, 32, 32], [64, 64, 64]], "channel_id": 0, "batch_size": 64, "stages": 3, "model_name": "brake-day-7-dvs"}

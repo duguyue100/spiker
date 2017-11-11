@@ -70,8 +70,12 @@ from spiker import log
 # Day 7
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "aug02/rec1501705481.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "aug13/rec1502667889.hdf5")
+#  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
+#                           "jul20/rec1500552390.hdf5")
 file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug13/rec1502667889.hdf5")
+                         "aug08/rec1502241196.hdf5")
 # Day 8
 #  file_name = os.path.join(spiker.SPIKER_DATA, "ddd17",
 #                           "aug15/rec1502825681.hdf5")
