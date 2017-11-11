@@ -19,6 +19,32 @@ run:
 experimental:
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/experimental.json
 
+rerun-exps:
+	# steering
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-night-2-aps.json
+	# accel
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_accel.py with ./spiker/exps/configs/cvprexps/accel-night-2-aps.json
+	# brake
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_brake.py with ./spiker/exps/configs/cvprexps/brake-night-2-aps.json
+	# steering
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-day-2-aps.json
+	# accel
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_accel.py with ./spiker/exps/configs/cvprexps/accel-day-2-aps.json
+	# brake
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_brake.py with ./spiker/exps/configs/cvprexps/brake-day-2-aps.json
+	# steering
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-day-7-aps.json
+	# accel
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_accel.py with ./spiker/exps/configs/cvprexps/accel-day-7-aps.json
+	# brake
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_brake.py with ./spiker/exps/configs/cvprexps/brake-day-7-aps.json
+	# steering
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-day-8-aps.json
+	# accel
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_accel.py with ./spiker/exps/configs/cvprexps/accel-day-8-aps.json
+	# brake
+	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_brake.py with ./spiker/exps/configs/cvprexps/brake-day-8-aps.json
+
 night-1234567-aps:
 	# steering
 	KERAS_BACKEND=tensorflow PYTHONPATH=$(PYTHONPATH) python ./spiker/exps/resnet_steering.py with ./spiker/exps/configs/cvprexps/steering-night-1-aps.json
