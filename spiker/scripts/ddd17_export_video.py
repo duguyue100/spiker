@@ -46,10 +46,10 @@ def get_prediction(X_test, exp_type, model_base, sensor_type):
 
 # load data
 data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "jul09/rec1499656391-export.hdf5")
-frame_cut = [2000, 4000]
+                         "aug15/rec1502825681-export.hdf5")
+frame_cut = [500, 1700]
 # load model
-model_base = "-night-1-"
+model_base = "-day-8-"
 exp_type = ["steering", "accel", "brake"]
 sensor_type = ["full", "dvs", "aps"]
 
@@ -208,7 +208,7 @@ def make_aps_dvs_frame(t):
     steering_curve.set_xticks([])
     steering_curve.set_title("Steering Wheel Angle Prediction")
     steering_curve.grid(linestyle="-.")
-    steering_curve.legend(bbox_to_anchor=(1, 0.5), fontsize=10)
+    steering_curve.legend(fontsize=6)
     steering_curve.set_ylabel("degree")
     fig.add_subplot(steering_curve)
 
@@ -238,7 +238,7 @@ def make_aps_dvs_frame(t):
     accel_curve.set_xticks([])
     accel_curve.set_title("Accelerator Pedal Position Prediction")
     accel_curve.grid(linestyle="-.")
-    accel_curve.legend(bbox_to_anchor=(1, 0.5), fontsize=10)
+    accel_curve.legend(fontsize=6)
     accel_curve.set_ylabel("pressure (%)")
     fig.add_subplot(accel_curve)
 
@@ -253,24 +253,27 @@ def make_aps_dvs_frame(t):
     brake_curve.plot(x_axis[:idx], brake_full[:idx],
                      label="DVS+APS",
                      color="#7f2704",
-                     linestyle="-",
-                     linewidth=2)
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
     brake_curve.plot(x_axis[:idx], brake_dvs[:idx],
                      label="DVS",
                      color="#3f007d",
-                     linestyle="-",
-                     linewidth=2)
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
     brake_curve.plot(x_axis[:idx], brake_aps[:idx],
                      label="APS",
                      color="#00441b",
-                     linestyle="-",
-                     linewidth=2)
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
     brake_curve.set_xlim(left=1, right=brake.shape[0])
     brake_curve.set_yticks([0, 100])
     brake_curve.set_yticklabels(["OFF", "ON"])
     brake_curve.set_title("Brake Pedal Position Prediction")
     brake_curve.grid(linestyle="-.")
-    brake_curve.legend(bbox_to_anchor=(1, 0.5), fontsize=10)
+    brake_curve.legend(fontsize=6)
     brake_curve.set_xlabel("frame")
     brake_curve.set_ylabel("ON/OFF")
     fig.add_subplot(brake_curve)
