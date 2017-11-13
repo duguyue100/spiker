@@ -91,7 +91,8 @@ etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 def prepare_train_data(file_name, target_size=(64, 86),
                        y_name="steering", only_y=False,
                        num_samples=None, verbose=True,
-                       frame_cut=None):
+                       frame_cut=None, data_portion="full",
+                       data_type="float32"):
     """Prepare training data from HDF5.
 
     Only for steering prediction.
@@ -104,28 +105,40 @@ def prepare_train_data(file_name, target_size=(64, 86),
     if frame_cut is None:
         frame_cut = [0, 1]
 
+    # determine data portion
+    first_f = frame_cut[0]
+    last_f = frame_cut[1]
+    num_frames = data_file["dvs_frame"][()].shape[0]
+    num_train = int((num_frames-first_f-last_f)*0.7)
+    if data_portion == "test":
+        first_f += num_train
+    elif data_portion == "train":
+        last_f = first_f+num_train
+
     if y_name == "steering":
         Y = data_file["steering_wheel_angle"][()][..., np.newaxis][
-            frame_cut[0]:-frame_cut[1]]
+            first_f:-last_f]
         Y = Y/180.*np.pi
     elif y_name == "accel":
         Y = data_file["accelerator_pedal_position"][()][..., np.newaxis][
-            frame_cut[0]:-frame_cut[1]]/100.
+            first_f:-last_f]/100.
     elif y_name == "brake":
         Y = data_file["brake_pedal_status"][()][..., np.newaxis][
-            frame_cut[0]:-frame_cut[1]]
+            first_f:-last_f]
+
     num_data = Y.shape[0] if num_samples is None else num_samples
     Y = Y[:num_data]
     if only_y is True:
         return Y
 
-    dvs_frames = data_file["dvs_frame"][()][frame_cut[0]:-frame_cut[1]]
+    # format data type
+    dvs_frames = data_file["dvs_frame"][()][first_f:-last_f]
     dvs_frames = (dvs_frames*(int(127./np.max(np.abs(dvs_frames)))) +
                   127).astype("uint8")
-    aps_frames = data_file["aps_frame"][()][frame_cut[0]:-frame_cut[1]]
+    aps_frames = data_file["aps_frame"][()][first_f:-last_f]
 
+    # preprocess data
     data_shape = dvs_frames.shape
-    #  num_data = data_shape[0] if num_samples is None else num_samples
     if target_size is not None:
         frames = np.zeros((num_data,)+target_size+(2,))
     else:
@@ -145,7 +158,7 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     data_file.close()
 
-    return frames.astype("float32"), Y
+    return frames.astype(data_type), Y
 
 
 def filter_frame(d):
