@@ -48,8 +48,8 @@ def get_log_file_dict(env="day", mode="full", task="steering"):
 
 #  option = "get-full-results"
 #  option = "get-dvs-results"
-#  option = "get-aps-results"
-option = "get-loss-curves"
+option = "get-aps-results"
+#  option = "get-loss-curves"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -70,13 +70,17 @@ if option == "get-full-results":
         brake_night_logs, mode="binary")
 
     print ("-"*30)
-    print (steer_night_res)
-    print (steer_day_res)
-    print ((steer_day_sum+steer_night_sum)/15)
+    for key in steer_night_res:
+        print (key, ":", np.sqrt(steer_night_res[key])*180/np.pi)
+    for key in steer_day_res:
+        print (key, ":", np.sqrt(steer_day_res[key])*180/np.pi)
+    print (np.sqrt((steer_day_sum+steer_night_sum)/15)*180/np.pi)
     print ("-"*30)
-    print (accel_night_res)
-    print (accel_day_res)
-    print ((accel_day_sum+accel_night_sum)/15)
+    for key in accel_night_res:
+        print (key, ":", np.sqrt(accel_night_res[key])*100)
+    for key in accel_day_res:
+        print (key, ":", np.sqrt(accel_day_res[key])*100)
+    print (np.sqrt((accel_day_sum+accel_night_sum)/15)*100)
     print ("-"*30)
     print (brake_night_res)
     print (brake_day_res)
@@ -101,13 +105,17 @@ elif option == "get-dvs-results":
         brake_night_logs, mode="binary")
 
     print ("-"*30)
-    print (steer_night_res)
-    print (steer_day_res)
-    print ((steer_day_sum+steer_night_sum)/15)
+    for key in steer_night_res:
+        print (key, ":", np.sqrt(steer_night_res[key])*180/np.pi)
+    for key in steer_day_res:
+        print (key, ":", np.sqrt(steer_day_res[key])*180/np.pi)
+    print (np.sqrt((steer_day_sum+steer_night_sum)/15)*180/np.pi)
     print ("-"*30)
-    print (accel_night_res)
-    print (accel_day_res)
-    print ((accel_day_sum+accel_night_sum)/15)
+    for key in accel_night_res:
+        print (key, ":", np.sqrt(accel_night_res[key])*100)
+    for key in accel_day_res:
+        print (key, ":", np.sqrt(accel_day_res[key])*100)
+    print (np.sqrt((accel_day_sum+accel_night_sum)/15)*100)
     print ("-"*30)
     print (brake_night_res)
     print (brake_day_res)
@@ -132,13 +140,17 @@ elif option == "get-aps-results":
         brake_night_logs, mode="binary")
 
     print ("-"*30)
-    print (steer_night_res)
-    print (steer_day_res)
-    print ((steer_day_sum+steer_night_sum)/15)
+    for key in steer_night_res:
+        print (key, ":", np.sqrt(steer_night_res[key])*180/np.pi)
+    for key in steer_day_res:
+        print (key, ":", np.sqrt(steer_day_res[key])*180/np.pi)
+    print (np.sqrt((steer_day_sum+steer_night_sum)/15)*180/np.pi)
     print ("-"*30)
-    print (accel_night_res)
-    print (accel_day_res)
-    print ((accel_day_sum+accel_night_sum)/15)
+    for key in accel_night_res:
+        print (key, ":", np.sqrt(accel_night_res[key])*100)
+    for key in accel_day_res:
+        print (key, ":", np.sqrt(accel_day_res[key])*100)
+    print (np.sqrt((accel_day_sum+accel_night_sum)/15)*100)
     print ("-"*30)
     print (brake_night_res)
     print (brake_day_res)
