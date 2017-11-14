@@ -88,6 +88,44 @@ EVENT_TYPES = {
 etype_by_id = {v: k for k, v in EVENT_TYPES.iteritems()}
 
 
+def export_data_field(file_name, data_field_list, frame_cut=None,
+                      data_portion="full", verbose=True):
+    """Export data field (excluding aps and dvs)."""
+    if not os.path.isfile(file_name):
+        raise ValueError("The file is not existed.")
+
+    data_file = h5py.File(file_name, "r")
+
+    if frame_cut is None:
+        frame_cut = [0, 1]
+    first_f = frame_cut[0]
+    last_f = frame_cut[1]
+    num_frames = data_file[data_field_list[0]]["data"][()].shape[0]
+    num_train = int((num_frames-first_f-last_f)*0.7)
+    if data_portion == "test":
+        first_f += num_train
+    elif data_portion == "train":
+        last_f = first_f+num_train
+
+    if len(data_field_list) > 1:
+        data_field_collector = {}
+    else:
+        return (
+            data_file[data_field_list[0]]["data"][()][:, 1][first_f:-last_f],
+            data_file[data_field_list[0]]["timestamp"][()][first_f:-last_f])
+
+    for data_item in data_field_list:
+        data_set = {}
+        data_set["data"] = data_file[data_item]["data"][:, 1][first_f:-last_f]
+        data_set["timestamp"] = \
+            data_file[data_item]["timestamp"][first_f:-last_f]
+        data_field_collector[data_item] = data_set
+        if verbose is True:
+            print ("[MESSAGE] The data field %s is exported." % (data_item))
+
+    return data_field_collector
+
+
 def prepare_train_data(file_name, target_size=(64, 86),
                        y_name="steering", only_y=False,
                        num_samples=None, verbose=True,
