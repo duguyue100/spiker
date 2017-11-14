@@ -7,6 +7,7 @@ from __future__ import print_function
 import os
 from os.path import join, isdir, isfile
 from collections import OrderedDict
+import cPickle as pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ import matplotlib.gridspec as gridspec
 
 import spiker
 from spiker.models import utils
-
+from spiker.data import ddd17
 
 def get_best_result(log_dict, mode="regress"):
     """Get result from a list of log files."""
@@ -48,8 +49,9 @@ def get_log_file_dict(env="day", mode="full", task="steering"):
 
 #  option = "get-full-results"
 #  option = "get-dvs-results"
-option = "get-aps-results"
+#  option = "get-aps-results"
 #  option = "get-loss-curves"
+option = "get-results-reproduce"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -314,3 +316,183 @@ elif option == "get-loss-curves":
                              log_name+".pdf"),
                         dpi=600, format="pdf",
                         bbox="tight", pad_inches=0.5)
+elif option == "get-results-reproduce":
+    data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
+                             "jul29/rec1501349894-export.hdf5")
+    frame_cut = [200, 1500]
+    # load model
+    model_base = "-day-5-"
+    exp_type = ["steering", "accel", "brake"]
+    sensor_type = ["full", "dvs", "aps"]
+
+    # get prediction
+    load_prediction = os.path.join(
+        spiker.SPIKER_EXTRA, "pred"+model_base+"result")
+
+    if os.path.isfile(load_prediction):
+        print ("[MESSAGE] Prediction available")
+        with open(load_prediction, "r") as f:
+            (steer_full, steer_dvs, steer_aps,
+             accel_full, accel_dvs, accel_aps,
+             brake_full, brake_dvs, brake_aps) = pickle.load(f)
+            f.close()
+
+    num_samples = 300
+    frames, steering = ddd17.prepare_train_data(data_path,
+                                                target_size=None,
+                                                y_name="steering",
+                                                frame_cut=frame_cut,
+                                                data_portion="test",
+                                                data_type="uint8",
+                                                num_samples=num_samples)
+    steering = ddd17.prepare_train_data(data_path,
+                                        target_size=None,
+                                        y_name="steering",
+                                        only_y=True,
+                                        frame_cut=frame_cut,
+                                        data_portion="test",
+                                        data_type="uint8")
+    accel = ddd17.prepare_train_data(data_path,
+                                     y_name="accel",
+                                     only_y=True,
+                                     frame_cut=frame_cut,
+                                     data_portion="test")
+    brake = ddd17.prepare_train_data(data_path,
+                                     y_name="brake",
+                                     only_y=True,
+                                     frame_cut=frame_cut,
+                                     data_portion="test")
+    x_axis = np.arange(steering.shape[0])
+    idx = 200
+
+    fig = plt.figure(figsize=(10, 8))
+    outer_grid = gridspec.GridSpec(2, 1, wspace=0.1)
+
+    # plot frames
+    frame_grid = gridspec.GridSpecFromSubplotSpec(
+        1, 2, subplot_spec=outer_grid[0, 0],
+        hspace=0.1)
+    aps_frame = plt.Subplot(fig, frame_grid[0])
+    aps_frame.imshow(frames[idx, :, :, 1], cmap="gray")
+    aps_frame.axis("off")
+    aps_frame.set_title("APS Frame")
+    fig.add_subplot(aps_frame)
+    dvs_frame = plt.Subplot(fig, frame_grid[1])
+    dvs_frame.imshow(frames[idx, :, :, 0], cmap="gray")
+    dvs_frame.axis("off")
+    dvs_frame.set_title("DVS Frame")
+    fig.add_subplot(dvs_frame)
+
+    # plot steering curve
+    curve_grid = gridspec.GridSpecFromSubplotSpec(
+        3, 1, subplot_spec=outer_grid[1, 0],
+        hspace=0.35)
+    steering_curve = plt.Subplot(fig, curve_grid[0, 0])
+    min_steer = np.min(steering*180/np.pi)
+    max_steer = np.max(steering*180/np.pi)
+    steering_curve.plot(x_axis, steering*180/np.pi,
+                        label="groundtruth",
+                        color="#08306b",
+                        linestyle="-",
+                        linewidth=2)
+    steering_curve.plot(x_axis, steer_full*180/np.pi,
+                        label="DVS+APS",
+                        color="#7f2704",
+                        linestyle="-",
+                        linewidth=1)
+    steering_curve.plot(x_axis, steer_dvs*180/np.pi,
+                        label="DVS",
+                        color="#3f007d",
+                        linestyle="-",
+                        linewidth=1)
+    steering_curve.plot(x_axis, steer_aps*180/np.pi,
+                        label="APS",
+                        color="#00441b",
+                        linestyle="-",
+                        linewidth=1)
+    steering_curve.plot((idx, idx), (min_steer, max_steer), color="black",
+                        linestyle="-", linewidth=1)
+    steering_curve.set_xlim(left=1, right=steering.shape[0])
+    steering_curve.set_xticks([])
+    steering_curve.set_title("Steering Wheel Angle Prediction")
+    steering_curve.grid(linestyle="-.")
+    steering_curve.legend(fontsize=6)
+    steering_curve.set_ylabel("degree")
+    fig.add_subplot(steering_curve)
+
+    # plot accel curve
+    accel_curve = plt.Subplot(fig, curve_grid[1, 0])
+    min_accel = np.min(accel*100)
+    max_accel = np.max(accel*100)
+    accel_curve.plot(x_axis, accel*100,
+                     label="groundtruth",
+                     color="#08306b",
+                     linestyle="-",
+                     linewidth=2)
+    accel_curve.plot(x_axis, accel_full*100,
+                     label="DVS+APS",
+                     color="#7f2704",
+                     linestyle="-",
+                     linewidth=1)
+    accel_curve.plot(x_axis, accel_dvs*100,
+                     label="DVS",
+                     color="#3f007d",
+                     linestyle="-",
+                     linewidth=1)
+    accel_curve.plot(x_axis, accel_aps*100,
+                     label="APS",
+                     color="#00441b",
+                     linestyle="-",
+                     linewidth=1)
+    accel_curve.plot((idx, idx), (min_accel, max_accel), color="black",
+                     linestyle="-", linewidth=1)
+    accel_curve.set_xlim(left=1, right=accel.shape[0])
+    accel_curve.set_xticks([])
+    accel_curve.set_title("Accelerator Pedal Position Prediction")
+    accel_curve.grid(linestyle="-.")
+    accel_curve.legend(fontsize=6)
+    accel_curve.set_ylabel("pressure (%)")
+    fig.add_subplot(accel_curve)
+
+    # plot brake curve
+    brake_curve = plt.Subplot(fig, curve_grid[2, 0])
+    brake_curve.plot(x_axis, brake*100,
+                     label="groundtruth",
+                     color="#08306b",
+                     linestyle=" ",
+                     marker="o",
+                     markersize=4)
+    brake_curve.plot(x_axis, brake_full,
+                     label="DVS+APS",
+                     color="#7f2704",
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
+    brake_curve.plot(x_axis, brake_dvs,
+                     label="DVS",
+                     color="#3f007d",
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
+    brake_curve.plot(x_axis, brake_aps,
+                     label="APS",
+                     color="#00441b",
+                     linestyle=" ",
+                     marker="o",
+                     markersize=2)
+    brake_curve.plot((idx, idx), (0, 100), color="black",
+                     linestyle="-", linewidth=1)
+    brake_curve.set_xlim(left=1, right=brake.shape[0])
+    brake_curve.set_yticks([0, 100])
+    brake_curve.set_yticklabels(["OFF", "ON"])
+    brake_curve.set_title("Brake Pedal Position Prediction")
+    brake_curve.grid(linestyle="-.")
+    brake_curve.legend(fontsize=6)
+    brake_curve.set_xlabel("frame")
+    brake_curve.set_ylabel("ON/OFF")
+    fig.add_subplot(brake_curve)
+
+    plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
+                     model_base+"result"+".pdf"),
+                dpi=600, format="pdf",
+                bbox="tight", pad_inches=0.5)
