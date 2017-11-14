@@ -337,7 +337,7 @@ elif option == "get-results-reproduce":
              brake_full, brake_dvs, brake_aps) = pickle.load(f)
             f.close()
 
-    num_samples = 300
+    num_samples = 500
     frames, steering = ddd17.prepare_train_data(data_path,
                                                 target_size=None,
                                                 y_name="steering",
@@ -416,7 +416,7 @@ elif option == "get-results-reproduce":
     steering_curve.set_xticks([])
     steering_curve.set_title("Steering Wheel Angle Prediction")
     steering_curve.grid(linestyle="-.")
-    steering_curve.legend(fontsize=6)
+    steering_curve.legend(fontsize=8, loc=1)
     steering_curve.set_ylabel("degree")
     fig.add_subplot(steering_curve)
 
@@ -450,7 +450,7 @@ elif option == "get-results-reproduce":
     accel_curve.set_xticks([])
     accel_curve.set_title("Accelerator Pedal Position Prediction")
     accel_curve.grid(linestyle="-.")
-    accel_curve.legend(fontsize=6)
+    accel_curve.legend(fontsize=8, loc=1)
     accel_curve.set_ylabel("pressure (%)")
     fig.add_subplot(accel_curve)
 
@@ -487,7 +487,7 @@ elif option == "get-results-reproduce":
     brake_curve.set_yticklabels(["OFF", "ON"])
     brake_curve.set_title("Brake Pedal Position Prediction")
     brake_curve.grid(linestyle="-.")
-    brake_curve.legend(fontsize=6)
+    brake_curve.legend(fontsize=8, loc=1)
     brake_curve.set_xlabel("frame")
     brake_curve.set_ylabel("ON/OFF")
     fig.add_subplot(brake_curve)
