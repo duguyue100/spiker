@@ -467,6 +467,9 @@ cvpr-create-figures:
 ddd17-fields:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_export_fields.py
 
+ddd17-steer:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_steer_export.py
+
 # Experiments
 
 resnet-steering-3-5:

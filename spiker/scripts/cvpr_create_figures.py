@@ -54,8 +54,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "get-loss-curves"
 #  option = "get-results-reproduce"
 #  option = "get-results-reproduce-steer"
-#  option = "get-steering-results"
-option = "attribute-hist"
+option = "get-steering-results"
+#  option = "attribute-hist"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -136,7 +136,9 @@ elif option == "get-steering-results":
         temp_res = np.array([day_res_1[key], day_res_2[key], day_res_3[key],
                              day_res_4[key]])
         temp_res = np.sqrt(temp_res)*180/np.pi
-        print (key, ":", temp_res.mean(), "std:", temp_res.std())
+        print (key, ":", temp_res.mean(), "std:", temp_res.std(),
+               "best", temp_res.argmin())
+        print (temp_res)
     avg_error = np.array([day_sum_1+night_sum_1,
                           day_sum_2+night_sum_2,
                           day_sum_3+night_sum_3,
