@@ -112,13 +112,13 @@ def export_data_field(file_name, data_field_list, frame_cut=None,
     else:
         return (
             data_file[data_field_list[0]]["data"][()][:, 1][first_f:-last_f],
-            data_file[data_field_list[0]]["timestamp"][()][first_f:-last_f])
+            data_file[data_field_list[0]]["data"][()][:, 0][first_f:-last_f])
 
     for data_item in data_field_list:
         data_set = {}
         data_set["data"] = data_file[data_item]["data"][:, 1][first_f:-last_f]
         data_set["timestamp"] = \
-            data_file[data_item]["timestamp"][first_f:-last_f]
+            data_file[data_item]["data"][:, 0][first_f:-last_f]
         data_field_collector[data_item] = data_set
         if verbose is True:
             print ("[MESSAGE] The data field %s is exported." % (data_item))

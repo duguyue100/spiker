@@ -36,13 +36,14 @@ def get_best_result(log_dict, mode="regress"):
     return logs, sum_score
 
 
-def get_log_file_dict(env="day", mode="full", task="steering"):
+def get_log_file_dict(env="day", mode="full", task="steering",
+                      exp_dir=spiker.SPIKER_EXPS):
     """Get data."""
     data_range = 8 if env == "day" else 7
     log_file_dict = OrderedDict()
     for idx in xrange(data_range):
         file_base = task+"-"+env+"-%d-" % (idx+1)+mode
-        log_file_dict[file_base] = join(spiker.SPIKER_EXPS, file_base,
+        log_file_dict[file_base] = join(exp_dir, file_base,
                                         "csv_history.log")
     return log_file_dict
 
@@ -52,7 +53,9 @@ def get_log_file_dict(env="day", mode="full", task="steering"):
 #  option = "get-aps-results"
 #  option = "get-loss-curves"
 #  option = "get-results-reproduce"
-option = "get-results-reproduce-steer"
+#  option = "get-results-reproduce-steer"
+#  option = "get-steering-results"
+option = "attribute-hist"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -89,6 +92,57 @@ if option == "get-full-results":
     print (brake_day_res)
     print ("-"*30)
     print ((brake_day_sum+brake_night_sum)/15)
+elif option == "get-steering-results":
+    sensor_mode = "full"
+    # collecting logs
+    # run 1
+    day_logs_1 = get_log_file_dict("day", sensor_mode, "steering",
+                                   spiker.SPIKER_EXPS+"-run-1")
+    night_logs_1 = get_log_file_dict("night", sensor_mode, "steering",
+                                     spiker.SPIKER_EXPS+"-run-1")
+    # run 2 
+    day_logs_2 = get_log_file_dict("day", sensor_mode, "steering",
+                                   spiker.SPIKER_EXPS+"-run-2")
+    night_logs_2 = get_log_file_dict("night", sensor_mode, "steering",
+                                     spiker.SPIKER_EXPS+"-run-2")
+    # run 3 
+    day_logs_3 = get_log_file_dict("day", sensor_mode, "steering",
+                                   spiker.SPIKER_EXPS+"-run-3")
+    night_logs_3 = get_log_file_dict("night", sensor_mode, "steering",
+                                     spiker.SPIKER_EXPS+"-run-3")
+    # run 3 
+    day_logs_4 = get_log_file_dict("day", sensor_mode, "steering",
+                                   spiker.SPIKER_EXPS+"-run-4")
+    night_logs_4 = get_log_file_dict("night", sensor_mode, "steering",
+                                     spiker.SPIKER_EXPS+"-run-4")
+    # collect results
+    day_res_1, day_sum_1 = get_best_result(day_logs_1)
+    night_res_1, night_sum_1 = get_best_result(night_logs_1)
+    day_res_2, day_sum_2 = get_best_result(day_logs_2)
+    night_res_2, night_sum_2 = get_best_result(night_logs_2)
+    day_res_3, day_sum_3 = get_best_result(day_logs_3)
+    night_res_3, night_sum_3 = get_best_result(night_logs_3)
+    day_res_4, day_sum_4 = get_best_result(day_logs_4)
+    night_res_4, night_sum_4 = get_best_result(night_logs_4)
+
+    # calculate mean and variance
+    for key in night_res_1:
+        temp_res = np.array([night_res_1[key], night_res_2[key],
+                             night_res_3[key],
+                             night_res_4[key]])
+        temp_res = np.sqrt(temp_res)*180/np.pi
+        print (key, ":", temp_res.mean(), temp_res.std())
+    for key in day_res_1:
+        temp_res = np.array([day_res_1[key], day_res_2[key], day_res_3[key],
+                             day_res_4[key]])
+        temp_res = np.sqrt(temp_res)*180/np.pi
+        print (key, ":", temp_res.mean(), "std:", temp_res.std())
+    avg_error = np.array([day_sum_1+night_sum_1,
+                          day_sum_2+night_sum_2,
+                          day_sum_3+night_sum_3,
+                          day_sum_4+night_sum_4])/15.
+    avg_error = np.sqrt(avg_error)*180/np.pi
+    print ("Average Error:", avg_error.mean(), "std:", avg_error.std())
 elif option == "get-dvs-results":
     steer_day_logs = get_log_file_dict("day", "dvs", "steering")
     accel_day_logs = get_log_file_dict("day", "dvs", "accel")
@@ -597,10 +651,58 @@ elif option == "get-results-reproduce-steer":
     steering_curve.grid(linestyle="-.")
     steering_curve.legend(fontsize=10)
     steering_curve.set_ylabel("degree")
-    steering_curve.set_xlabel("time (ms)")
+    steering_curve.set_xlabel("time (s)")
     fig.add_subplot(steering_curve)
 
     plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
                      "vis"+model_base+"result"+".pdf"),
                 dpi=600, format="pdf",
                 bbox="tight", pad_inches=0.5)
+elif option == "attribute-hist":
+    data_path = os.path.join(spiker.SPIKER_EXTRA, "exported-data")
+    data_list = os.listdir(data_path)
+    attribute = "steering_wheel_angle"
+    #  attribute = "brake_pedal_status"
+    #  attribute = "vehicle_speed"
+    #  attribute = "headlamp_status"
+
+    # read data
+    attribute_collector = []
+    for item in data_list:
+        file_path = os.path.join(data_path, item)
+        with open(file_path, "r") as f:
+            data_fields = pickle.load(f)
+            f.close()
+        data = data_fields[attribute]["data"].astype("float32")
+        time_stamp = data_fields[attribute]["timestamp"].astype("float32")
+        non_zero_idx = np.count_nonzero(time_stamp)
+        data = data[:non_zero_idx]
+        time_stamp = time_stamp[:non_zero_idx]
+        attribute_collector.append(data)
+        print ("[MESSAGE] Processed %s" % (item))
+
+    # join all data
+    all_data = attribute_collector[0]
+    for idx in xrange(1, len(attribute_collector)):
+        all_data = np.hstack((all_data, attribute_collector[idx]))
+
+    weights = np.ones_like(all_data)/float(600)
+
+    fig = plt.figure(figsize=(8, 4))
+    ax = fig.gca()
+    ax.hist(all_data, bins=40, color="#666970", weights=weights,
+             linewidth=1.2, edgecolor="black")
+    plt.xlabel("rotation (degree)", fontsize=15)
+    plt.ylabel("time (min)", fontsize=15)
+    #  plt.xticks([0.0, 1.0], ["released", "pressed"],
+    #             rotation="vertical", fontsize=15)
+    #  plt.xticks([0.0, 1.0], ["OFF", "ON"],
+    #             rotation="vertical", fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.tight_layout()
+    plt.yscale("log")
+    plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
+                     "vis-steering.pdf"),
+                dpi=600, format="pdf",
+                pad_inches=0.5)
