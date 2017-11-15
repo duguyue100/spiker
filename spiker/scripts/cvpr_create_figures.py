@@ -54,8 +54,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "get-loss-curves"
 #  option = "get-results-reproduce"
 #  option = "get-results-reproduce-steer"
-option = "get-steering-results"
-#  option = "attribute-hist"
+#  option = "get-steering-results"
+option = "attribute-hist"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -687,6 +687,10 @@ elif option == "attribute-hist":
     all_data = attribute_collector[0]
     for idx in xrange(1, len(attribute_collector)):
         all_data = np.hstack((all_data, attribute_collector[idx]))
+
+    # mse
+    mse = np.sqrt(np.mean((all_data/180*np.pi)**2))*180/np.pi
+    print ("MSE:", mse)
 
     weights = np.ones_like(all_data)/float(600)
 
