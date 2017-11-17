@@ -7,6 +7,8 @@ from __future__ import print_function
 import os
 import cPickle as pickle
 
+import numpy as np
+
 import spiker
 from spiker.data import ddd17
 from spiker.models import utils
@@ -14,7 +16,7 @@ from spiker.models import utils
 
 def find_best(exp_dir, run_root):
     """find best experiment."""
-    exp_dir = os.path.join(spiker.SPIKER_EXPS, exp_dir)
+    exp_dir = os.path.join(run_root, exp_dir)
     file_list = os.listdir(exp_dir)
     file_clean_list = []
     for item in file_list:
@@ -48,47 +50,47 @@ def get_prediction(X_test, exp_type, model_base, sensor_type, exp_dir):
 
 # construct experiment cuts
 exp_names = {
-    "jul09/rec1499656391.hdf5": [2000, 4000],
-    "jul09/rec1499657850.hdf5": [500, 800],
-    "aug01/rec1501649676.hdf5": [500, 500],
-    "aug01/rec1501650719.hdf5": [500, 500],
-    "aug05/rec1501994881.hdf5": [200, 800],
-    "aug09/rec1502336427.hdf5": [100, 400],
-    "aug09/rec1502337436.hdf5": [100, 400],
-    "jul16/rec1500220388.hdf5": [500, 200],
-    "jul18/rec1500383971.hdf5": [500, 1000],
-    "jul18/rec1500402142.hdf5": [200, 2000],
-    "jul28/rec1501288723.hdf5": [200, 1000],
-    "jul29/rec1501349894.hdf5": [200, 1500],
-    "aug01/rec1501614399.hdf5": [200, 800],
-    "aug08/rec1502241196.hdf5": [500, 1000],
-    "aug15/rec1502825681.hdf5": [500, 1700]
+    "jul09/rec1499656391-export.hdf5": [2000, 4000],
+    "jul09/rec1499657850-export.hdf5": [500, 800],
+    "aug01/rec1501649676-export.hdf5": [500, 500],
+    "aug01/rec1501650719-export.hdf5": [500, 500],
+    "aug05/rec1501994881-export.hdf5": [200, 800],
+    "aug09/rec1502336427-export.hdf5": [100, 400],
+    "aug09/rec1502337436-export.hdf5": [100, 400],
+    "jul16/rec1500220388-export.hdf5": [500, 200],
+    "jul18/rec1500383971-export.hdf5": [500, 1000],
+    "jul18/rec1500402142-export.hdf5": [200, 2000],
+    "jul28/rec1501288723-export.hdf5": [200, 1000],
+    "jul29/rec1501349894-export.hdf5": [200, 1500],
+    "aug01/rec1501614399-export.hdf5": [200, 800],
+    "aug08/rec1502241196-export.hdf5": [500, 1000],
+    "aug15/rec1502825681-export.hdf5": [500, 1700]
 }
 
 # construct experiment names
 exp_des = {
-    "jul09/rec1499656391.hdf5": "night-1",
-    "jul09/rec1499657850.hdf5": "night-2",
-    "aug01/rec1501649676.hdf5": "night-3",
-    "aug01/rec1501650719.hdf5": "night-4",
-    "aug05/rec1501994881.hdf5": "night-5",
-    "aug09/rec1502336427.hdf5": "night-6",
-    "aug09/rec1502337436.hdf5": "night-7",
-    "jul16/rec1500220388.hdf5": "day-1",
-    "jul18/rec1500383971.hdf5": "day-2",
-    "jul18/rec1500402142.hdf5": "day-3",
-    "jul28/rec1501288723.hdf5": "day-4",
-    "jul29/rec1501349894.hdf5": "day-5",
-    "aug01/rec1501614399.hdf5": "day-6",
-    "aug08/rec1502241196.hdf5": "day-7",
-    "aug15/rec1502825681.hdf5": "day-8"
+    "jul09/rec1499656391-export.hdf5": "night-1",
+    "jul09/rec1499657850-export.hdf5": "night-2",
+    "aug01/rec1501649676-export.hdf5": "night-3",
+    "aug01/rec1501650719-export.hdf5": "night-4",
+    "aug05/rec1501994881-export.hdf5": "night-5",
+    "aug09/rec1502336427-export.hdf5": "night-6",
+    "aug09/rec1502337436-export.hdf5": "night-7",
+    "jul16/rec1500220388-export.hdf5": "day-1",
+    "jul18/rec1500383971-export.hdf5": "day-2",
+    "jul18/rec1500402142-export.hdf5": "day-3",
+    "jul28/rec1501288723-export.hdf5": "day-4",
+    "jul29/rec1501349894-export.hdf5": "day-5",
+    "aug01/rec1501614399-export.hdf5": "day-6",
+    "aug08/rec1502241196-export.hdf5": "day-7",
+    "aug15/rec1502825681-export.hdf5": "day-8"
 }
 
 for exp in exp_des:
     exp_id = exp_des[exp]
     # load data
     data_path = os.path.join(
-        spiker.SPIKER_EXPS, "ddd17", exp)
+        spiker.SPIKER_DATA, "ddd17", exp)
     frame_cut = exp_names[exp]
     # frame model base names
     model_base = "-"+exp_id+"-"
