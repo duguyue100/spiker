@@ -34,6 +34,7 @@ def compute_log_curve(log_name, num_runs=4):
          log_collector[1]["loss"][np.newaxis, ...],
          log_collector[2]["loss"][np.newaxis, ...],
          log_collector[3]["loss"][np.newaxis, ...]))
+    train_loss = train_loss.astype("float64")
     train_loss_mean = np.mean(train_loss, axis=0)
     train_loss_std = np.std(train_loss, axis=0)
 
@@ -43,6 +44,7 @@ def compute_log_curve(log_name, num_runs=4):
          log_collector[1]["val_loss"][np.newaxis, ...],
          log_collector[2]["val_loss"][np.newaxis, ...],
          log_collector[3]["val_loss"][np.newaxis, ...]))
+    test_loss = test_loss.astype("float64")
     test_loss_mean = np.mean(test_loss, axis=0)
     test_loss_std = np.std(test_loss, axis=0)
 
@@ -52,6 +54,7 @@ def compute_log_curve(log_name, num_runs=4):
          log_collector[1]["mean_squared_error"][np.newaxis, ...],
          log_collector[2]["mean_squared_error"][np.newaxis, ...],
          log_collector[3]["mean_squared_error"][np.newaxis, ...]))
+    train_mse = train_mse.astype("float64")
     train_mse_mean = np.mean(train_mse, axis=0)
     train_mse_std = np.std(train_mse, axis=0)
 
@@ -61,6 +64,7 @@ def compute_log_curve(log_name, num_runs=4):
          log_collector[1]["val_mean_squared_error"][np.newaxis, ...],
          log_collector[2]["val_mean_squared_error"][np.newaxis, ...],
          log_collector[3]["val_mean_squared_error"][np.newaxis, ...]))
+    test_mse = test_mse.astype("float64")
     test_mse_mean = np.mean(test_mse, axis=0)
     test_mse_std = np.std(test_mse, axis=0)
 
@@ -827,7 +831,7 @@ elif option == "get-steer-loss-curves":
         env_range = 7 if env == "night" else 8
         for env_idx in xrange(env_range):
             # create grid specs
-            log_name = "steering"+"-"+env+"-%d-" % (env_idx+1)
+            log_name = "steering"+"-"+env+"-%d" % (env_idx+1)
             full_log_name = "steering"+"-"+env+"-%d-" % (env_idx+1)+"full"
             dvs_log_name = "steering"+"-"+env+"-%d-" % (env_idx+1)+"dvs"
             aps_log_name = "steering"+"-"+env+"-%d-" % (env_idx+1)+"aps"
@@ -843,16 +847,28 @@ elif option == "get-steer-loss-curves":
             # produce figure 
             fig = plt.figure(figsize=(16, 8))
 
-            print (full_log[0][0].shape)
+            print (log_name)
 
             # train loss
             trloss_ax = fig.add_subplot(221)
             trloss_ax.plot(full_axis, full_log[0][0], label="DVS+APS",
                            color="#08306b", linestyle="-", linewidth=2)
+            trloss_ax.fill_between(
+                full_axis, full_log[0][0]+full_log[0][1],
+                full_log[0][0]-full_log[0][1],
+                facecolor="#08306b", alpha=0.3)
             trloss_ax.plot(dvs_axis, dvs_log[0][0], label="DVS",
                            color="#7f2704", linestyle="-", linewidth=2)
+            trloss_ax.fill_between(
+                dvs_axis, dvs_log[0][0]+dvs_log[0][1],
+                dvs_log[0][0]-dvs_log[0][1],
+                facecolor="#7f2704", alpha=0.3)
             trloss_ax.plot(aps_axis, aps_log[0][0], label="APS",
                            color="#3f007d", linestyle="-", linewidth=2)
+            trloss_ax.fill_between(
+                aps_axis, aps_log[0][0]+aps_log[0][1],
+                aps_log[0][0]-aps_log[0][1],
+                facecolor="#3f007d", alpha=0.3)
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("loss", fontsize=15)
             plt.title("Training Loss")
@@ -866,10 +882,22 @@ elif option == "get-steer-loss-curves":
             teloss_ax = fig.add_subplot(222)
             teloss_ax.plot(full_axis, full_log[1][0], label="DVS+APS",
                            color="#08306b", linestyle="-", linewidth=2)
+            teloss_ax.fill_between(
+                full_axis, full_log[1][0]+full_log[1][1],
+                full_log[1][0]-full_log[1][1],
+                facecolor="#08306b", alpha=0.3)
             teloss_ax.plot(dvs_axis, dvs_log[1][0], label="DVS",
                            color="#7f2704", linestyle="-", linewidth=2)
+            teloss_ax.fill_between(
+                dvs_axis, dvs_log[1][0]+dvs_log[1][1],
+                dvs_log[1][0]-dvs_log[1][1],
+                facecolor="#7f2704", alpha=0.3)
             teloss_ax.plot(aps_axis, aps_log[1][0], label="APS",
                            color="#3f007d", linestyle="-", linewidth=2)
+            teloss_ax.fill_between(
+                aps_axis, aps_log[1][0]+aps_log[1][1],
+                aps_log[1][0]-aps_log[1][1],
+                facecolor="#3f007d", alpha=0.3)
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("loss", fontsize=15)
             plt.title("Testing Loss")
@@ -883,10 +911,22 @@ elif option == "get-steer-loss-curves":
             trmse_ax = fig.add_subplot(223)
             trmse_ax.plot(full_axis, full_log[2][0], label="DVS+APS",
                           color="#08306b", linestyle="-", linewidth=2)
+            trmse_ax.fill_between(
+                full_axis, full_log[2][0]+full_log[2][1],
+                full_log[2][0]-full_log[2][1],
+                facecolor="#08306b", alpha=0.3)
             trmse_ax.plot(dvs_axis, dvs_log[2][0], label="DVS",
                            color="#7f2704", linestyle="-", linewidth=2)
+            trmse_ax.fill_between(
+                dvs_axis, dvs_log[2][0]+dvs_log[2][1],
+                dvs_log[2][0]-dvs_log[2][1],
+                facecolor="#7f2704", alpha=0.3)
             trmse_ax.plot(aps_axis, aps_log[2][0], label="APS",
                            color="#3f007d", linestyle="-", linewidth=2)
+            trmse_ax.fill_between(
+                aps_axis, aps_log[2][0]+aps_log[2][1],
+                aps_log[2][0]-aps_log[2][1],
+                facecolor="#3f007d", alpha=0.3)
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("mse", fontsize=15)
             plt.title("Training MSE")
@@ -900,10 +940,22 @@ elif option == "get-steer-loss-curves":
             temse_ax = fig.add_subplot(224)
             temse_ax.plot(full_axis, full_log[3][0], label="DVS+APS",
                           color="#08306b", linestyle="-", linewidth=2)
+            temse_ax.fill_between(
+                full_axis, full_log[3][0]+full_log[3][1],
+                full_log[3][0]-full_log[3][1],
+                facecolor="#08306b", alpha=0.3)
             temse_ax.plot(dvs_axis, dvs_log[3][0], label="DVS",
                            color="#7f2704", linestyle="-", linewidth=2)
+            temse_ax.fill_between(
+                dvs_axis, dvs_log[3][0]+dvs_log[3][1],
+                dvs_log[3][0]-dvs_log[3][1],
+                facecolor="#7f2704", alpha=0.3)
             temse_ax.plot(aps_axis, aps_log[3][0], label="APS",
                            color="#3f007d", linestyle="-", linewidth=2)
+            temse_ax.fill_between(
+                aps_axis, aps_log[3][0]+aps_log[3][1],
+                aps_log[3][0]-aps_log[3][1],
+                facecolor="#3f007d", alpha=0.3)
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("mse", fontsize=15)
             plt.title("Testing MSE")
