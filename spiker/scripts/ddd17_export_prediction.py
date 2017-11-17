@@ -8,6 +8,7 @@ import os
 import cPickle as pickle
 
 import numpy as np
+import keras.backend as K
 
 import spiker
 from spiker.data import ddd17
@@ -45,6 +46,8 @@ def get_prediction(X_test, exp_type, model_base, sensor_type, exp_dir):
     print ("[MESSAGE]", model_path)
     model = utils.keras_load_model(model_path)
     prediction = utils.keras_predict_batch(model, X_test, verbose=True)
+
+    K.clear_session() 
 
     return prediction
 

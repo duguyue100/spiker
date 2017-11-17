@@ -115,7 +115,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "get-results-reproduce-steer"
 #  option = "get-steering-results"
 #  option = "attribute-hist"
-option = "get-steer-loss-curves"
+#  option = "get-steer-loss-curves"
+option = "get-results-reproduce-steer-all"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -972,3 +973,194 @@ elif option == "get-steer-loss-curves":
                              log_name+".pdf"),
                         dpi=600, format="pdf",
                         bbox="tight", pad_inches=0.5)
+elif option == "get-results-reproduce-steer-all":
+    # construct experiment cuts
+    exp_names = {
+        "jul09/rec1499656391-export.hdf5": [2000, 4000],
+        "jul09/rec1499657850-export.hdf5": [500, 800],
+        "aug01/rec1501649676-export.hdf5": [500, 500],
+        "aug01/rec1501650719-export.hdf5": [500, 500],
+        "aug05/rec1501994881-export.hdf5": [200, 800],
+        "aug09/rec1502336427-export.hdf5": [100, 400],
+        "aug09/rec1502337436-export.hdf5": [100, 400],
+        "jul16/rec1500220388-export.hdf5": [500, 200],
+        "jul18/rec1500383971-export.hdf5": [500, 1000],
+        "jul18/rec1500402142-export.hdf5": [200, 2000],
+        "jul28/rec1501288723-export.hdf5": [200, 1000],
+        "jul29/rec1501349894-export.hdf5": [200, 1500],
+        "aug01/rec1501614399-export.hdf5": [200, 800],
+        "aug08/rec1502241196-export.hdf5": [500, 1000],
+        "aug15/rec1502825681-export.hdf5": [500, 1700]
+    }
+
+    # construct experiment names
+    exp_des = {
+        "jul09/rec1499656391-export.hdf5": "night-1",
+        "jul09/rec1499657850-export.hdf5": "night-2",
+        "aug01/rec1501649676-export.hdf5": "night-3",
+        "aug01/rec1501650719-export.hdf5": "night-4",
+        "aug05/rec1501994881-export.hdf5": "night-5",
+        "aug09/rec1502336427-export.hdf5": "night-6",
+        "aug09/rec1502337436-export.hdf5": "night-7",
+        "jul16/rec1500220388-export.hdf5": "day-1",
+        "jul18/rec1500383971-export.hdf5": "day-2",
+        "jul18/rec1500402142-export.hdf5": "day-3",
+        "jul28/rec1501288723-export.hdf5": "day-4",
+        "jul29/rec1501349894-export.hdf5": "day-5",
+        "aug01/rec1501614399-export.hdf5": "day-6",
+        "aug08/rec1502241196-export.hdf5": "day-7",
+        "aug15/rec1502825681-export.hdf5": "day-8"
+    }
+
+    for exp in exp_des:
+        exp_id = exp_des[exp]
+        # load data
+        data_path = os.path.join(
+            spiker.SPIKER_DATA, "ddd17", exp)
+        origin_data_path = os.path.join(
+            spiker.SPIKER_DATA, "ddd17",
+            exp[:-12]+".hdf5")
+        frame_cut = exp_names[exp]
+        # frame model base names
+        model_base = "-"+exp_id+"-"
+        sensor_type = ["full", "dvs", "aps"]
+
+        print ("[MESSAGE] Data path:", data_path)
+        print ("[MESSAGE] Original path:", origin_data_path)
+        print ("[MESSAGE] Frame cut:", frame_cut)
+
+        num_samples = 300
+        idx = 250
+        # load ground truth
+        frames, steering = ddd17.prepare_train_data(data_path,
+                                                    target_size=None,
+                                                    y_name="steering",
+                                                    frame_cut=frame_cut,
+                                                    data_portion="test",
+                                                    data_type="uint8",
+                                                    num_samples=num_samples)
+        steering = ddd17.prepare_train_data(data_path,
+                                            target_size=None,
+                                            y_name="steering",
+                                            only_y=True,
+                                            frame_cut=frame_cut,
+                                            data_portion="test",
+                                            data_type="uint8")
+        steer, steer_time = ddd17.export_data_field(
+            origin_data_path, ['steering_wheel_angle'], frame_cut=frame_cut,
+            data_portion="test")
+        steer_time -= steer_time[0]
+        # in ms
+        steer_time = steer_time.astype("float32")/1e6
+        print (steer_time)
+
+        # load prediction
+        res_path = os.path.join(
+            spiker.SPIKER_EXTRA, "exported-results",
+            "steering"+model_base+"run-1.pkl")
+        with open(res_path, "r") as f:
+            run_1 = pickle.load(f)
+            f.close()
+        res_path = os.path.join(
+            spiker.SPIKER_EXTRA, "exported-results",
+            "steering"+model_base+"run-2.pkl")
+        with open(res_path, "r") as f:
+            run_2 = pickle.load(f)
+            f.close()
+        res_path = os.path.join(
+            spiker.SPIKER_EXTRA, "exported-results",
+            "steering"+model_base+"run-3.pkl")
+        with open(res_path, "r") as f:
+            run_3 = pickle.load(f)
+            f.close()
+        res_path = os.path.join(
+            spiker.SPIKER_EXTRA, "exported-results",
+            "steering"+model_base+"run-4.pkl")
+        with open(res_path, "r") as f:
+            run_4 = pickle.load(f)
+            f.close()
+
+        # calculating mean and difference
+        full_res = np.hstack(
+            (run_1[0], run_2[0], run_3[0], run_4[0])).T
+        full_mean_res = np.mean(full_res, axis=0)*180.0/np.pi
+        full_std_res = np.std(full_res, axis=0)*180.0/np.pi
+        dvs_res = np.hstack(
+            (run_1[1], run_2[1], run_3[1], run_3[1])).T
+        dvs_mean_res = np.mean(dvs_res, axis=0)*180.0/np.pi
+        dvs_std_res = np.std(dvs_res, axis=0)*180.0/np.pi
+        aps_res = np.hstack(
+            (run_1[2], run_2[2], run_3[2], run_3[2])).T
+        aps_mean_res = np.mean(aps_res, axis=0)*180.0/np.pi
+        aps_std_res = np.std(aps_res, axis=0)*180.0/np.pi
+
+        # producing figures
+        fig = plt.figure(figsize=(10, 8))
+        outer_grid = gridspec.GridSpec(2, 1, wspace=0.1)
+
+        # plot frames
+        frame_grid = gridspec.GridSpecFromSubplotSpec(
+            1, 2, subplot_spec=outer_grid[0, 0],
+            hspace=0.1)
+        aps_frame = plt.Subplot(fig, frame_grid[0])
+        aps_frame.imshow(frames[idx, :, :, 1], cmap="gray")
+        aps_frame.axis("off")
+        aps_frame.set_title("APS Frame")
+        fig.add_subplot(aps_frame)
+        dvs_frame = plt.Subplot(fig, frame_grid[1])
+        dvs_frame.imshow(frames[idx, :, :, 0], cmap="gray")
+        dvs_frame.axis("off")
+        dvs_frame.set_title("DVS Frame")
+        fig.add_subplot(dvs_frame)
+
+        # plot steering curve
+        steering_curve = plt.Subplot(fig, outer_grid[1, 0])
+        min_steer = np.min(steering*180/np.pi)
+        max_steer = np.max(steering*180/np.pi)
+        steering_curve.plot(steer_time, dvs_mean_res,
+                            label="DVS",
+                            color="#3f007d",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, dvs_mean_res+dvs_std_res,
+            dvs_mean_res-dvs_std_res, facecolor="#3f007d",
+            alpha=0.3)
+        steering_curve.plot(steer_time, aps_mean_res,
+                            label="APS",
+                            color="#00441b",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, aps_mean_res+aps_std_res,
+            aps_mean_res-aps_std_res, facecolor="#00441b",
+            alpha=0.3)
+        steering_curve.plot(steer_time, full_mean_res,
+                            label="DVS+APS",
+                            color="#7f2704",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, full_mean_res+full_std_res,
+            full_mean_res-full_std_res, facecolor="#7f2704",
+            alpha=0.3)
+        steering_curve.plot(steer_time, steering*180/np.pi,
+                            label="groundtruth",
+                            color="#08306b",
+                            linestyle="-",
+                            linewidth=2)
+        steering_curve.plot((steer_time[idx], steer_time[idx]),
+                            (min_steer, max_steer), color="black",
+                            linestyle="-", linewidth=1)
+        steering_curve.set_xlim(left=0, right=steer_time[-1])
+        steering_curve.set_title("Steering Wheel Angle Prediction")
+        steering_curve.grid(linestyle="-.")
+        steering_curve.legend(fontsize=10)
+        steering_curve.set_ylabel("degree")
+        steering_curve.set_xlabel("time (s)")
+        fig.add_subplot(steering_curve)
+
+        plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
+                         "vis"+model_base+"result"+".pdf"),
+                    dpi=600, format="pdf",
+                    bbox="tight", pad_inches=0.5)
