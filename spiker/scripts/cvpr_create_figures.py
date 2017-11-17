@@ -663,10 +663,23 @@ elif option == "get-results-reproduce-steer":
 elif option == "attribute-hist":
     data_path = os.path.join(spiker.SPIKER_EXTRA, "exported-data")
     data_list = os.listdir(data_path)
-    attribute = "steering_wheel_angle"
+    #  attribute = "steering_wheel_angle"
     #  attribute = "brake_pedal_status"
     #  attribute = "vehicle_speed"
     #  attribute = "headlamp_status"
+    #  attribute = "accelerator_pedal_position"
+    #  attribute = "engine_speed"
+    #  attribute = "odometer"
+    #  attribute = "torque_at_transmission"
+    #  attribute = "transmission_gear_position"
+    #  attribute = "fuel_level"
+    #  attribute = "fuel_level"
+    #  attribute = "high_beam_status"
+    #  attribute = "windshield_wiper_status"
+    #  attribute = "ignition_status"
+    #  attribute = "parking_brake_status"
+    #  attribute = "latitude"
+    attribute = "longitude"
 
     # read data
     attribute_collector = []
@@ -689,19 +702,59 @@ elif option == "attribute-hist":
         all_data = np.hstack((all_data, attribute_collector[idx]))
 
     # mse
-    mse = np.sqrt(np.mean((all_data/180*np.pi)**2))*180/np.pi
-    print ("MSE:", mse)
+    #  mse = np.sqrt(np.mean((all_data/180*np.pi)**2))*180/np.pi
+    #  print ("MSE:", mse)
 
     weights = np.ones_like(all_data)/float(600)
+    print (all_data.max())
+    print (all_data.min())
 
     fig = plt.figure(figsize=(8, 4))
     ax = fig.gca()
     ax.hist(all_data, bins=40, color="#666970", weights=weights,
              linewidth=1.2, edgecolor="black")
-    plt.xlabel("rotation (degree)", fontsize=15)
+    #  ax.hist(all_data, bins=2, color="#666970",
+    #           linewidth=1.2, edgecolor="black")
+    # latitude
+    plt.xlabel("degree", fontsize=15)
     plt.ylabel("time (min)", fontsize=15)
+    # fuel level
+    #  plt.xlabel("fuel level (%)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # transmission_gear_position
+    #  plt.xlabel("gear position", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # torque_at_transmission
+    #  plt.xlabel("torque (N x m)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # steering pedal status
+    #  plt.xlabel("rotation (degree)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # vehicle speed
+    #  plt.xlabel("speed (km/h)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # engine speed
+    #  plt.xlabel("speed (rpm)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # odometer
+    #  plt.xlabel("odometer (km)", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    # brake pedal status
     #  plt.xticks([0.0, 1.0], ["released", "pressed"],
     #             rotation="vertical", fontsize=15)
+    # headlamp_status
+    #  plt.xticks([0.0, 1.0], ["OFF", "ON"],
+    #             rotation="vertical", fontsize=15)
+    # high_beam_status
+    #  plt.xticks([0.0, 1.0], ["OFF", "ON"],
+    #             rotation="vertical", fontsize=15)
+    # windshield_wiper_status
+    #  plt.xticks([0.0, 1.0], ["OFF", "ON"],
+    #             rotation="vertical", fontsize=15)
+    # ignition_status
+    #  plt.xticks([0.0, 3.0], ["OFF", "ON"],
+    #             rotation="vertical", fontsize=15)
+    # parking_brake_status
     #  plt.xticks([0.0, 1.0], ["OFF", "ON"],
     #             rotation="vertical", fontsize=15)
     plt.yticks(fontsize=15)
@@ -709,6 +762,6 @@ elif option == "attribute-hist":
     plt.tight_layout()
     plt.yscale("log")
     plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
-                     "vis-steering.pdf"),
+                     attribute+".pdf"),
                 dpi=600, format="pdf",
                 pad_inches=0.5)
