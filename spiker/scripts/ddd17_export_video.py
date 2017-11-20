@@ -8,16 +8,41 @@ import os
 import cPickle as pickle
 
 import numpy as np
+import cv2
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import moviepy.editor as mpy
-from moviepy.video.io.bindings import mplfig_to_npimage
 
 import spiker
 from spiker.data import ddd17
 from spiker.models import utils
+
+CV_AA = cv2.LINE_AA if int(cv2.__version__[0]) > 2 else cv2.CV_AA
+
+
+def plot_steering_wheel(img, steer_angles, colors=[(8, 48, 107)],
+                        thickness=[2]):
+    """draw angles based on a list of predictions."""
+    c, r = (173, 130), 65  # center, radius
+    for angle_idx in xrange(len(steer_angles)):
+        a = steer_angles[angle_idx]
+        a_rad = + a / 180. * np.pi + np.pi / 2
+        a_rad = np.pi-a_rad
+        t = (c[0] + int(np.cos(a_rad) * r), c[1] - int(np.sin(a_rad) * r))
+        cv2.line(img, c, t, colors[angle_idx],
+                 thickness[angle_idx], CV_AA)
+    cv2.circle(img, c, r, (0, 0, 0), 1, CV_AA)
+    # the label
+    cv2.line(img, (c[0]-r+5, c[1]), (c[0]-r, c[1]), (0, 0, 0), 1, CV_AA)
+    cv2.line(img, (c[0]+r-5, c[1]), (c[0]+r, c[1]), (0, 0, 0), 1, CV_AA)
+    cv2.line(img, (c[0], c[1]-r+5), (c[0], c[1]-r), (0, 0, 0), 1, CV_AA)
+    cv2.line(img, (c[0], c[1]+r-5), (c[0], c[1]+r), (0, 0, 0), 1, CV_AA)
+    cv2.putText(img, 'gt: %0.1f deg' % steer_angles[0], (
+        c[0]-35, c[1]+30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0),
+        1, CV_AA)
+    return img
 
 
 def find_best(exp_dir):
@@ -44,250 +69,240 @@ def get_prediction(X_test, exp_type, model_base, sensor_type):
 
     return prediction
 
-# load data
-data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
-                         "aug15/rec1502825681-export.hdf5")
-frame_cut = [500, 1700]
-# load model
-model_base = "-day-8-"
-exp_type = ["steering", "accel", "brake"]
-sensor_type = ["full", "dvs", "aps"]
 
-# get prediction
-load_prediction = os.path.join(
-    spiker.SPIKER_EXTRA, "pred"+model_base+"result")
+# construct experiment cuts
+exp_names = {
+    "jul09/rec1499656391-export.hdf5": [2000, 4000],
+    "jul09/rec1499657850-export.hdf5": [500, 800],
+    "aug01/rec1501649676-export.hdf5": [500, 500],
+    "aug01/rec1501650719-export.hdf5": [500, 500],
+    "aug05/rec1501994881-export.hdf5": [200, 800],
+    "aug09/rec1502336427-export.hdf5": [100, 400],
+    "aug09/rec1502337436-export.hdf5": [100, 400],
+    "jul16/rec1500220388-export.hdf5": [500, 200],
+    "jul18/rec1500383971-export.hdf5": [500, 1000],
+    "jul18/rec1500402142-export.hdf5": [200, 2000],
+    "jul28/rec1501288723-export.hdf5": [200, 1000],
+    "jul29/rec1501349894-export.hdf5": [200, 1500],
+    "aug01/rec1501614399-export.hdf5": [200, 800],
+    "aug08/rec1502241196-export.hdf5": [500, 1000],
+    "aug15/rec1502825681-export.hdf5": [500, 1700]
+}
 
-if os.path.isfile(load_prediction):
-    print ("[MESSAGE] Prediction available")
-    with open(load_prediction, "r") as f:
-        (steer_full, steer_dvs, steer_aps,
-         accel_full, accel_dvs, accel_aps,
-         brake_full, brake_dvs, brake_aps) = pickle.load(f)
+# construct experiment names
+exp_des = {
+    "jul09/rec1499656391-export.hdf5": "night-1",
+    "jul09/rec1499657850-export.hdf5": "night-2",
+    "aug01/rec1501649676-export.hdf5": "night-3",
+    "aug01/rec1501650719-export.hdf5": "night-4",
+    "aug05/rec1501994881-export.hdf5": "night-5",
+    "aug09/rec1502336427-export.hdf5": "night-6",
+    "aug09/rec1502337436-export.hdf5": "night-7",
+    "jul16/rec1500220388-export.hdf5": "day-1",
+    "jul18/rec1500383971-export.hdf5": "day-2",
+    "jul18/rec1500402142-export.hdf5": "day-3",
+    "jul28/rec1501288723-export.hdf5": "day-4",
+    "jul29/rec1501349894-export.hdf5": "day-5",
+    "aug01/rec1501614399-export.hdf5": "day-6",
+    "aug08/rec1502241196-export.hdf5": "day-7",
+    "aug15/rec1502825681-export.hdf5": "day-8"
+}
+
+for exp in exp_des:
+    exp_id = exp_des[exp]
+    # load data
+    data_path = os.path.join(
+        spiker.SPIKER_DATA, "ddd17", exp)
+    origin_data_path = os.path.join(
+        spiker.SPIKER_DATA, "ddd17",
+        exp[:-12]+".hdf5")
+    frame_cut = exp_names[exp]
+    # frame model base names
+    model_base = "-"+exp_id+"-"
+    sensor_type = ["full", "dvs", "aps"]
+
+    print ("[MESSAGE] Data path:", data_path)
+    print ("[MESSAGE] Original path:", origin_data_path)
+    print ("[MESSAGE] Frame cut:", frame_cut)
+
+    num_samples = 1000
+    # load ground truth
+    frames, steering = ddd17.prepare_train_data(data_path,
+                                                target_size=None,
+                                                y_name="steering",
+                                                frame_cut=frame_cut,
+                                                data_portion="test",
+                                                data_type="uint8",
+                                                num_samples=1000)
+    steering = ddd17.prepare_train_data(data_path,
+                                        target_size=None,
+                                        y_name="steering",
+                                        only_y=True,
+                                        frame_cut=frame_cut,
+                                        data_portion="test",
+                                        data_type="uint8")
+    steer, steer_time = ddd17.export_data_field(
+        origin_data_path, ['steering_wheel_angle'], frame_cut=frame_cut,
+        data_portion="test")
+    steering = steering[:num_samples]
+    steer_time = steer_time[:num_samples]
+    steer_time -= steer_time[0]
+    # in ms
+    steer_time = steer_time.astype("float32")/1e6
+    print (steer_time)
+
+    # load prediction
+    res_path = os.path.join(
+        spiker.SPIKER_EXTRA, "exported-results",
+        "steering"+model_base+"run-1.pkl")
+    with open(res_path, "r") as f:
+        run_1 = pickle.load(f)
         f.close()
-else:
-    # export ground truth
-    test_frames, _ = ddd17.prepare_train_data(data_path,
-                                              y_name="steering",
-                                              frame_cut=frame_cut)
-    test_frames /= 255.
-    test_frames -= np.mean(test_frames, keepdims=True)
-    num_samples = test_frames.shape[0]
-    num_train = int(num_samples*0.7)
-    X_test = test_frames[num_train:]
-    del test_frames
-    # steering full
-    steer_full = get_prediction(
-        X_test, exp_type[0], model_base, sensor_type[0])
-    print ("[MESSAGE] Steering Full")
-    # steering dvs 
-    steer_dvs = get_prediction(
-        X_test[:, :, :, 0][..., np.newaxis],
-        exp_type[0], model_base, sensor_type[1])
-    print ("[MESSAGE] Steering DVS")
-    # steering aps
-    steer_aps = get_prediction(
-        X_test[:, :, :, 1][..., np.newaxis],
-        exp_type[0], model_base, sensor_type[2])
-    print ("[MESSAGE] Steering APS")
-    # accel full
-    accel_full = get_prediction(
-        X_test, exp_type[1], model_base, sensor_type[0])
-    print ("[MESSAGE] Accel Full")
-    # accel dvs 
-    accel_dvs = get_prediction(
-        X_test[:, :, :, 0][..., np.newaxis],
-        exp_type[1], model_base, sensor_type[1])
-    print ("[MESSAGE] Accel DVS")
-    # accel aps
-    accel_aps = get_prediction(
-        X_test[:, :, :, 1][..., np.newaxis],
-        exp_type[1], model_base, sensor_type[2])
-    print ("[MESSAGE] Accel APS")
-    # brake full
-    brake_full = get_prediction(
-        X_test, exp_type[2], model_base, sensor_type[0])
-    print ("[MESSAGE] Brake Full")
-    # brake dvs 
-    brake_dvs = get_prediction(
-        X_test[:, :, :, 0][..., np.newaxis],
-        exp_type[2], model_base, sensor_type[1])
-    print ("[MESSAGE] Brake DVS")
-    # brake aps
-    brake_aps = get_prediction(
-        X_test[:, :, :, 1][..., np.newaxis],
-        exp_type[2], model_base, sensor_type[2])
-    print ("[MESSAGE] Brake APS")
-
-    del X_test
-
-    # save prediction for future use.
-    save_prediction = os.path.join(
-        spiker.SPIKER_EXTRA, "pred"+model_base+"result")
-    with open(save_prediction, "w") as f:
-        pickle.dump([steer_full, steer_dvs, steer_aps,
-                     accel_full, accel_dvs, accel_aps,
-                     brake_full, brake_dvs, brake_aps], f)
+    res_path = os.path.join(
+        spiker.SPIKER_EXTRA, "exported-results",
+        "steering"+model_base+"run-2.pkl")
+    with open(res_path, "r") as f:
+        run_2 = pickle.load(f)
+        f.close()
+    res_path = os.path.join(
+        spiker.SPIKER_EXTRA, "exported-results",
+        "steering"+model_base+"run-3.pkl")
+    with open(res_path, "r") as f:
+        run_3 = pickle.load(f)
+        f.close()
+    res_path = os.path.join(
+        spiker.SPIKER_EXTRA, "exported-results",
+        "steering"+model_base+"run-4.pkl")
+    with open(res_path, "r") as f:
+        run_4 = pickle.load(f)
         f.close()
 
-# load visualization data
-num_samples = 500
-frames, steering = ddd17.prepare_train_data(data_path,
-                                            target_size=None,
-                                            y_name="steering",
-                                            frame_cut=frame_cut,
-                                            data_portion="test",
-                                            data_type="uint8",
-                                            num_samples=num_samples)
-accel = ddd17.prepare_train_data(data_path,
-                                 y_name="accel",
-                                 only_y=True,
-                                 frame_cut=frame_cut,
-                                 data_portion="test",
-                                 num_samples=num_samples)
-brake = ddd17.prepare_train_data(data_path,
-                                 y_name="brake",
-                                 only_y=True,
-                                 frame_cut=frame_cut,
-                                 data_portion="test",
-                                 num_samples=num_samples)
-x_axis = np.arange(steering.shape[0])
+    # calculating mean and difference
+    full_res = np.hstack(
+        (run_1[0], run_2[0], run_3[0], run_4[0])).T
+    full_mean_res = np.mean(full_res, axis=0)*180.0/np.pi
+    full_mean_res = full_mean_res[:num_samples]
+    full_std_res = np.std(full_res, axis=0)*180.0/np.pi
+    full_std_res = full_std_res[:num_samples]
+    dvs_res = np.hstack(
+        (run_1[1], run_2[1], run_3[1], run_3[1])).T
+    dvs_mean_res = np.mean(dvs_res, axis=0)*180.0/np.pi
+    dvs_mean_res = dvs_mean_res[:num_samples]
+    dvs_std_res = np.std(dvs_res, axis=0)*180.0/np.pi
+    dvs_std_res = dvs_std_res[:num_samples]
+    aps_res = np.hstack(
+        (run_1[2], run_2[2], run_3[2], run_3[2])).T
+    aps_mean_res = np.mean(aps_res, axis=0)*180.0/np.pi
+    aps_mean_res = aps_mean_res[:num_samples]
+    aps_std_res = np.std(aps_res, axis=0)*180.0/np.pi
+    aps_std_res = aps_std_res[:num_samples]
 
-# video properties
-fps = 20
-duration = steering.shape[0]/float(fps)
+    # video properties
+    fps = 20
+    duration = steering.shape[0]/float(fps)
+    #  duration = 200/float(fps)
 
+    def make_aps_dvs_frame(t):
+        """Make aps and dvs combined frame."""
+        # identify frame name
+        idx = int(t*fps)
+        # producing figures
+        fig = plt.figure(figsize=(10, 8))
+        outer_grid = gridspec.GridSpec(2, 1, wspace=0.1)
 
-def make_aps_dvs_frame(t):
-    """Make aps and dvs combined frame."""
-    # identify frame name
-    idx = int(t*fps)
-    fig = plt.figure(figsize=(10, 8))
-    outer_grid = gridspec.GridSpec(2, 1, wspace=0.1)
+        # plot frames
+        frame_grid = gridspec.GridSpecFromSubplotSpec(
+            1, 2, subplot_spec=outer_grid[0, 0],
+            hspace=0.1)
+        # plot aps frame
+        aps_frame = plt.Subplot(fig, frame_grid[0])
+        aps_frame_plot = frames[idx, :, :, 1][..., np.newaxis]
+        aps_frame_plot = aps_frame_plot.repeat(3, axis=2)
+        aps_frame_plot = plot_steering_wheel(
+            aps_frame_plot,
+            [steering[idx]*180/np.pi, full_mean_res[idx],
+             aps_mean_res[idx]],
+            [(107, 48, 8), (4, 39, 127), (27, 68, 0)],
+            [2, 1, 1])
+        aps_frame.imshow(aps_frame_plot)
+        aps_frame.axis("off")
+        aps_frame.set_title("APS Frame")
+        fig.add_subplot(aps_frame)
 
-    # plot frames
-    frame_grid = gridspec.GridSpecFromSubplotSpec(
-        1, 2, subplot_spec=outer_grid[0, 0],
-        hspace=0.1)
-    aps_frame = plt.Subplot(fig, frame_grid[0])
-    aps_frame.imshow(frames[idx, :, :, 1], cmap="gray")
-    aps_frame.axis("off")
-    aps_frame.set_title("APS Frame")
-    fig.add_subplot(aps_frame)
-    dvs_frame = plt.Subplot(fig, frame_grid[1])
-    dvs_frame.imshow(frames[idx, :, :, 0], cmap="gray")
-    dvs_frame.axis("off")
-    dvs_frame.set_title("DVS Frame")
-    fig.add_subplot(dvs_frame)
+        # plot dvs frame
+        dvs_frame = plt.Subplot(fig, frame_grid[1])
+        dvs_frame_plot = frames[idx, :, :, 0][..., np.newaxis]
+        dvs_frame_plot = dvs_frame_plot.repeat(3, axis=2)
+        dvs_frame_plot = plot_steering_wheel(
+            dvs_frame_plot,
+            [steering[idx]*180/np.pi, full_mean_res[idx],
+             dvs_mean_res[idx]],
+            [(107, 48, 8), (4, 39, 127), (125, 0, 63)],
+            [2, 1, 1])
+        dvs_frame.imshow(dvs_frame_plot)
+        dvs_frame.axis("off")
+        dvs_frame.set_title("DVS Frame")
+        fig.add_subplot(dvs_frame)
 
-    # plot steering curve
-    curve_grid = gridspec.GridSpecFromSubplotSpec(
-        3, 1, subplot_spec=outer_grid[1, 0],
-        hspace=0.35)
-    steering_curve = plt.Subplot(fig, curve_grid[0, 0])
-    steering_curve.plot(x_axis[:idx], steering[:idx]*180/np.pi,
-                        label="groundtruth",
-                        color="#08306b",
-                        linestyle="-",
-                        linewidth=2)
-    steering_curve.plot(x_axis[:idx], steer_full[:idx]*180/np.pi,
-                        label="DVS+APS",
-                        color="#7f2704",
-                        linestyle="-",
-                        linewidth=1)
-    steering_curve.plot(x_axis[:idx], steer_dvs[:idx]*180/np.pi,
-                        label="DVS",
-                        color="#3f007d",
-                        linestyle="-",
-                        linewidth=1)
-    steering_curve.plot(x_axis[:idx], steer_aps[:idx]*180/np.pi,
-                        label="APS",
-                        color="#00441b",
-                        linestyle="-",
-                        linewidth=1)
-    steering_curve.set_xlim(left=1, right=steering.shape[0])
-    steering_curve.set_xticks([])
-    steering_curve.set_title("Steering Wheel Angle Prediction")
-    steering_curve.grid(linestyle="-.")
-    steering_curve.legend(fontsize=6)
-    steering_curve.set_ylabel("degree")
-    fig.add_subplot(steering_curve)
+        # plot steering curve
+        steering_curve = plt.Subplot(fig, outer_grid[1, 0])
+        min_steer = np.min(steering*180/np.pi)
+        max_steer = np.max(steering*180/np.pi)
+        steering_curve.plot(steer_time, dvs_mean_res,
+                            label="DVS",
+                            color="#3f007d",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, dvs_mean_res+dvs_std_res,
+            dvs_mean_res-dvs_std_res, facecolor="#3f007d",
+            alpha=0.3)
+        steering_curve.plot(steer_time, aps_mean_res,
+                            label="APS",
+                            color="#00441b",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, aps_mean_res+aps_std_res,
+            aps_mean_res-aps_std_res, facecolor="#00441b",
+            alpha=0.3)
+        steering_curve.plot(steer_time, full_mean_res,
+                            label="DVS+APS",
+                            color="#7f2704",
+                            linestyle="-",
+                            linewidth=1)
+        steering_curve.fill_between(
+            steer_time, full_mean_res+full_std_res,
+            full_mean_res-full_std_res, facecolor="#7f2704",
+            alpha=0.3)
+        steering_curve.plot(steer_time, steering*180/np.pi,
+                            label="groundtruth",
+                            color="#08306b",
+                            linestyle="-",
+                            linewidth=2)
+        steering_curve.plot((steer_time[idx], steer_time[idx]),
+                            (min_steer, max_steer), color="black",
+                            linestyle="-", linewidth=1)
+        steering_curve.set_xlim(left=0, right=steer_time[-1])
+        steering_curve.set_title("Steering Wheel Angle Prediction")
+        steering_curve.grid(linestyle="-.")
+        steering_curve.legend(fontsize=10)
+        steering_curve.set_ylabel("degree")
+        steering_curve.set_xlabel("time (s)")
+        fig.add_subplot(steering_curve)
 
-    # plot accel curve
-    accel_curve = plt.Subplot(fig, curve_grid[1, 0])
-    accel_curve.plot(x_axis[:idx], accel[:idx]*100,
-                     label="groundtruth",
-                     color="#08306b",
-                     linestyle="-",
-                     linewidth=2)
-    accel_curve.plot(x_axis[:idx], accel_full[:idx]*100,
-                     label="DVS+APS",
-                     color="#7f2704",
-                     linestyle="-",
-                     linewidth=1)
-    accel_curve.plot(x_axis[:idx], accel_dvs[:idx]*100,
-                     label="DVS",
-                     color="#3f007d",
-                     linestyle="-",
-                     linewidth=1)
-    accel_curve.plot(x_axis[:idx], accel_aps[:idx]*100,
-                     label="APS",
-                     color="#00441b",
-                     linestyle="-",
-                     linewidth=1)
-    accel_curve.set_xlim(left=1, right=accel.shape[0])
-    accel_curve.set_xticks([])
-    accel_curve.set_title("Accelerator Pedal Position Prediction")
-    accel_curve.grid(linestyle="-.")
-    accel_curve.legend(fontsize=6)
-    accel_curve.set_ylabel("pressure (%)")
-    fig.add_subplot(accel_curve)
+        outer_grid.tight_layout(fig)
 
-    # plot brake curve
-    brake_curve = plt.Subplot(fig, curve_grid[2, 0])
-    brake_curve.plot(x_axis[:idx], brake[:idx]*100,
-                     label="groundtruth",
-                     color="#08306b",
-                     linestyle=" ",
-                     marker="o",
-                     markersize=4)
-    brake_curve.plot(x_axis[:idx], brake_full[:idx],
-                     label="DVS+APS",
-                     color="#7f2704",
-                     linestyle=" ",
-                     marker="o",
-                     markersize=2)
-    brake_curve.plot(x_axis[:idx], brake_dvs[:idx],
-                     label="DVS",
-                     color="#3f007d",
-                     linestyle=" ",
-                     marker="o",
-                     markersize=2)
-    brake_curve.plot(x_axis[:idx], brake_aps[:idx],
-                     label="APS",
-                     color="#00441b",
-                     linestyle=" ",
-                     marker="o",
-                     markersize=2)
-    brake_curve.set_xlim(left=1, right=brake.shape[0])
-    brake_curve.set_yticks([0, 100])
-    brake_curve.set_yticklabels(["OFF", "ON"])
-    brake_curve.set_title("Brake Pedal Position Prediction")
-    brake_curve.grid(linestyle="-.")
-    brake_curve.legend(fontsize=6)
-    brake_curve.set_xlabel("frame")
-    brake_curve.set_ylabel("ON/OFF")
-    fig.add_subplot(brake_curve)
+        # form data array
+        fig.canvas.draw()
+        data_buffer = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        data_buffer = data_buffer.reshape(
+            fig.canvas.get_width_height()[::-1] + (3,))
 
-    # form data array
-    fig.canvas.draw()
-    data_buffer = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    data_buffer = data_buffer.reshape(
-        fig.canvas.get_width_height()[::-1] + (3,))
+        return data_buffer
 
-    return data_buffer
+    clip = mpy.VideoClip(make_aps_dvs_frame, duration=duration)
 
-clip = mpy.VideoClip(make_aps_dvs_frame, duration=duration)
-
-clip.write_videofile(os.path.join(spiker.SPIKER_EXTRA,
-                     "benchmark"+model_base+"video.mp4"),
-                     fps=fps)
+    clip.write_videofile(os.path.join(spiker.SPIKER_EXTRA,
+                         "benchmark"+model_base+"video.mp4"),
+                         fps=fps)
