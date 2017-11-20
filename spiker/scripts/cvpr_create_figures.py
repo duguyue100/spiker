@@ -10,6 +10,7 @@ from collections import OrderedDict
 import cPickle as pickle
 
 import numpy as np
+from scipy.misc import imsave
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -116,7 +117,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "get-steering-results"
 #  option = "attribute-hist"
 #  option = "get-steer-loss-curves"
-option = "get-results-reproduce-steer-all"
+#  option = "get-results-reproduce-steer-all"
+option = "export-images-for-dataset"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -1164,3 +1166,70 @@ elif option == "get-results-reproduce-steer-all":
                          "vis"+model_base+"result"+".pdf"),
                     dpi=600, format="pdf",
                     bbox="tight", pad_inches=0.5)
+elif option == "export-images-for-dataset":
+    # construct experiment cuts
+    exp_names = {
+        "jul09/rec1499656391-export.hdf5": [2000, 4000],
+        "jul09/rec1499657850-export.hdf5": [500, 800],
+        "aug01/rec1501649676-export.hdf5": [500, 500],
+        "aug01/rec1501650719-export.hdf5": [500, 500],
+        "aug05/rec1501994881-export.hdf5": [200, 800],
+        "aug09/rec1502336427-export.hdf5": [100, 400],
+        "aug09/rec1502337436-export.hdf5": [100, 400],
+        "jul16/rec1500220388-export.hdf5": [500, 200],
+        "jul18/rec1500383971-export.hdf5": [500, 1000],
+        "jul18/rec1500402142-export.hdf5": [200, 2000],
+        "jul28/rec1501288723-export.hdf5": [200, 1000],
+        "jul29/rec1501349894-export.hdf5": [200, 1500],
+        "aug01/rec1501614399-export.hdf5": [200, 800],
+        "aug08/rec1502241196-export.hdf5": [500, 1000],
+        "aug15/rec1502825681-export.hdf5": [500, 1700]
+    }
+
+    # construct experiment names
+    exp_des = {
+        "jul09/rec1499656391-export.hdf5": "night-1",
+        "jul09/rec1499657850-export.hdf5": "night-2",
+        "aug01/rec1501649676-export.hdf5": "night-3",
+        "aug01/rec1501650719-export.hdf5": "night-4",
+        "aug05/rec1501994881-export.hdf5": "night-5",
+        "aug09/rec1502336427-export.hdf5": "night-6",
+        "aug09/rec1502337436-export.hdf5": "night-7",
+        "jul16/rec1500220388-export.hdf5": "day-1",
+        "jul18/rec1500383971-export.hdf5": "day-2",
+        "jul18/rec1500402142-export.hdf5": "day-3",
+        "jul28/rec1501288723-export.hdf5": "day-4",
+        "jul29/rec1501349894-export.hdf5": "day-5",
+        "aug01/rec1501614399-export.hdf5": "day-6",
+        "aug08/rec1502241196-export.hdf5": "day-7",
+        "aug15/rec1502825681-export.hdf5": "day-8"
+    }
+
+    for exp in exp_des:
+        exp_id = exp_des[exp]
+        # load data
+        data_path = os.path.join(
+            spiker.SPIKER_DATA, "ddd17", exp)
+        frame_cut = exp_names[exp]
+        # frame model base names
+        print ("[MESSAGE] Data path:", data_path)
+        print ("[MESSAGE] Frame cut:", frame_cut)
+
+        num_samples = 500 
+        idx = 300 
+        # load ground truth
+        frames, steering = ddd17.prepare_train_data(data_path,
+                                                    target_size=None,
+                                                    y_name="steering",
+                                                    frame_cut=frame_cut,
+                                                    data_type="uint8",
+                                                    num_samples=num_samples)
+        dvs_save_path = os.path.join(
+            spiker.SPIKER_EXTRA, "cvprfigs",
+            "img-"+exp_id+"-dvs.png")
+        imsave(dvs_save_path, frames[idx, :, :, 0])
+        aps_save_path = os.path.join(
+            spiker.SPIKER_EXTRA, "cvprfigs",
+            "img-"+exp_id+"-aps.png")
+        imsave(aps_save_path, frames[idx, :, :, 1])
+        print ("[MESSAGE] Saved images for %s" % (exp_id))
