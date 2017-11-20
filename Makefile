@@ -473,6 +473,9 @@ ddd17-steer:
 ddd17-export-prediction:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_export_prediction.py
 
+ddd17-export-rate:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_export_rate.py
+
 # Experiments
 
 resnet-steering-3-5:
