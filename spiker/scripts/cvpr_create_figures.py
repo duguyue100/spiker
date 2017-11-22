@@ -118,7 +118,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "attribute-hist"
 #  option = "get-steer-loss-curves"
 #  option = "get-results-reproduce-steer-all"
-option = "export-images-for-dataset"
+#  option = "export-images-for-dataset"
+option = "export-rate"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -656,6 +657,13 @@ elif option == "get-results-reproduce-steer":
                                         frame_cut=frame_cut,
                                         data_portion="test",
                                         data_type="uint8")
+    speed = ddd17.prepare_train_data(data_path,
+                                     target_size=None,
+                                     y_name="speed",
+                                     only_y=True,
+                                     frame_cut=frame_cut,
+                                     data_portion="test",
+                                     data_type="uint8")
     steer, steer_time = ddd17.export_data_field(
         origin_data_path, ['steering_wheel_angle'], frame_cut=frame_cut,
         data_portion="test")
@@ -684,8 +692,10 @@ elif option == "get-results-reproduce-steer":
     dvs_frame.set_title("DVS Frame")
     fig.add_subplot(dvs_frame)
 
+    inner_grid = gridspec.GridSpecFromSubplotSpec(
+        2, 1, subplot_spec=outer_grid[1, 0])
     # plot steering curve
-    steering_curve = plt.Subplot(fig, outer_grid[1, 0])
+    steering_curve = plt.Subplot(fig, inner_grid[0, 0])
     min_steer = np.min(steering*180/np.pi)
     max_steer = np.max(steering*180/np.pi)
     steering_curve.plot(steer_time, steering*180/np.pi,
@@ -716,9 +726,27 @@ elif option == "get-results-reproduce-steer":
     steering_curve.grid(linestyle="-.")
     steering_curve.legend(fontsize=10)
     steering_curve.set_ylabel("degree")
-    steering_curve.set_xlabel("time (s)")
+    #  steering_curve.set_xlabel("time (s)")
     fig.add_subplot(steering_curve)
 
+    speed_curve = plt.Subplot(fig, inner_grid[1, 0])
+    min_speed = np.min(speed)
+    max_speed = np.max(speed)
+    speed_curve.plot(steer_time, speed,
+                     color="black",
+                     linestyle="-",
+                     linewidth=2)
+    speed_curve.plot((steer_time[idx], steer_time[idx]),
+                     (min_speed, max_speed), color="black",
+                     linestyle="-", linewidth=1)
+    speed_curve.set_xlim(left=0, right=steer_time[-1])
+    speed_curve.set_title("Vehicle Speed")
+    speed_curve.grid(linestyle="-.")
+    speed_curve.set_ylabel("km/h")
+    speed_curve.set_xlabel("time (s)")
+    fig.add_subplot(speed_curve, sharex=steering_curve)
+
+    outer_grid.tight_layout(fig)
     plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
                      "vis"+model_base+"result"+".pdf"),
                 dpi=600, format="pdf",
@@ -1048,13 +1076,24 @@ elif option == "get-results-reproduce-steer-all":
                                             frame_cut=frame_cut,
                                             data_portion="test",
                                             data_type="uint8")
+        speed = ddd17.prepare_train_data(data_path,
+                                         target_size=None,
+                                         y_name="speed",
+                                         only_y=True,
+                                         frame_cut=frame_cut,
+                                         data_portion="test",
+                                         data_type="uint8")
         steer, steer_time = ddd17.export_data_field(
             origin_data_path, ['steering_wheel_angle'], frame_cut=frame_cut,
             data_portion="test")
         steer_time -= steer_time[0]
         # in ms
         steer_time = steer_time.astype("float32")/1e6
-        print (steer_time)
+        #  steer_time = np.arange(steering.shape[0])/10.
+        #  num_y = 173
+        #  steering = steering[:num_y]
+        #  steer_time = steer_time[:num_y]
+        #  speed = speed[:num_y]
 
         # load prediction
         res_path = os.path.join(
@@ -1088,13 +1127,26 @@ elif option == "get-results-reproduce-steer-all":
         full_mean_res = np.mean(full_res, axis=0)*180.0/np.pi
         full_std_res = np.std(full_res, axis=0)*180.0/np.pi
         dvs_res = np.hstack(
-            (run_1[1], run_2[1], run_3[1], run_3[1])).T
+            (run_1[1], run_2[1], run_3[1], run_4[1])).T
         dvs_mean_res = np.mean(dvs_res, axis=0)*180.0/np.pi
         dvs_std_res = np.std(dvs_res, axis=0)*180.0/np.pi
         aps_res = np.hstack(
-            (run_1[2], run_2[2], run_3[2], run_3[2])).T
+            (run_1[2], run_2[2], run_3[2], run_4[2])).T
         aps_mean_res = np.mean(aps_res, axis=0)*180.0/np.pi
         aps_std_res = np.std(aps_res, axis=0)*180.0/np.pi
+
+        #  full_res = np.hstack(
+        #      (run_1[0], run_3[0], run_4[0])).T
+        #  full_mean_res = (np.mean(full_res, axis=0)*180.0/np.pi)[:num_y]
+        #  full_std_res = (np.std(full_res, axis=0)*180.0/np.pi)[:num_y]
+        #  dvs_res = np.hstack(
+        #      (run_1[1], run_3[1], run_4[1])).T
+        #  dvs_mean_res = (np.mean(dvs_res, axis=0)*180.0/np.pi)[:num_y]
+        #  dvs_std_res = (np.std(dvs_res, axis=0)*180.0/np.pi)[:num_y]
+        #  aps_res = np.hstack(
+        #      (run_1[2], run_3[2], run_4[2])).T
+        #  aps_mean_res = (np.mean(aps_res, axis=0)*180.0/np.pi)[:num_y]
+        #  aps_std_res = (np.std(aps_res, axis=0)*180.0/np.pi)[:num_y]
 
         # producing figures
         fig = plt.figure(figsize=(10, 8))
@@ -1115,8 +1167,10 @@ elif option == "get-results-reproduce-steer-all":
         dvs_frame.set_title("DVS Frame")
         fig.add_subplot(dvs_frame)
 
+        inner_grid = gridspec.GridSpecFromSubplotSpec(
+            2, 1, subplot_spec=outer_grid[1, 0])
         # plot steering curve
-        steering_curve = plt.Subplot(fig, outer_grid[1, 0])
+        steering_curve = plt.Subplot(fig, inner_grid[0, 0])
         min_steer = np.min(steering*180/np.pi)
         max_steer = np.max(steering*180/np.pi)
         steering_curve.plot(steer_time, dvs_mean_res,
@@ -1159,9 +1213,28 @@ elif option == "get-results-reproduce-steer-all":
         steering_curve.grid(linestyle="-.")
         steering_curve.legend(fontsize=10)
         steering_curve.set_ylabel("degree")
-        steering_curve.set_xlabel("time (s)")
+        #  steering_curve.set_xlabel("time (s)")
         fig.add_subplot(steering_curve)
 
+        speed_curve = plt.Subplot(fig, inner_grid[1, 0])
+        min_speed = np.min(speed)
+        max_speed = np.max(speed)
+        speed_curve.plot(steer_time, speed,
+                         color="black",
+                         linestyle="-",
+                         linewidth=2)
+        speed_curve.plot((steer_time[idx], steer_time[idx]),
+                         (min_speed, max_speed), color="black",
+                         linestyle="-", linewidth=1)
+        speed_curve.set_xlim(left=0, right=steer_time[-1])
+        speed_curve.grid(linestyle="-.")
+        speed_curve.set_ylabel("vehicle speed (km/h)")
+        speed_curve.set_xlabel("time (s)")
+        fig.add_subplot(speed_curve, sharex=steering_curve)
+
+        outer_grid.tight_layout(fig)
+
+        print ("[MESSAGE] Writing")
         plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
                          "vis"+model_base+"result"+".pdf"),
                     dpi=600, format="pdf",
@@ -1215,8 +1288,8 @@ elif option == "export-images-for-dataset":
         print ("[MESSAGE] Data path:", data_path)
         print ("[MESSAGE] Frame cut:", frame_cut)
 
-        num_samples = 500 
-        idx = 300 
+        num_samples = 500
+        idx = 300
         # load ground truth
         frames, steering = ddd17.prepare_train_data(data_path,
                                                     target_size=None,
@@ -1233,3 +1306,86 @@ elif option == "export-images-for-dataset":
             "img-"+exp_id+"-aps.png")
         imsave(aps_save_path, frames[idx, :, :, 1])
         print ("[MESSAGE] Saved images for %s" % (exp_id))
+elif option == "export-rate":
+    # construct experiment cuts
+    exp_names = {
+        "jul09/rec1499656391-export.hdf5": [2000, 4000],
+        "jul09/rec1499657850-export.hdf5": [500, 800],
+        "aug01/rec1501649676-export.hdf5": [500, 500],
+        "aug01/rec1501650719-export.hdf5": [500, 500],
+        "aug05/rec1501994881-export.hdf5": [200, 800],
+        "aug09/rec1502336427-export.hdf5": [100, 400],
+        "aug09/rec1502337436-export.hdf5": [100, 400],
+        "jul16/rec1500220388-export.hdf5": [500, 200],
+        "jul18/rec1500383971-export.hdf5": [500, 1000],
+        "jul18/rec1500402142-export.hdf5": [200, 2000],
+        "jul28/rec1501288723-export.hdf5": [200, 1000],
+        "jul29/rec1501349894-export.hdf5": [200, 1500],
+        "aug01/rec1501614399-export.hdf5": [200, 800],
+        "aug08/rec1502241196-export.hdf5": [500, 1000],
+        "aug15/rec1502825681-export.hdf5": [500, 1700]
+    }
+
+    # construct experiment names
+    exp_des = {
+        "jul09/rec1499656391-export.hdf5": "night-1",
+        "jul09/rec1499657850-export.hdf5": "night-2",
+        "aug01/rec1501649676-export.hdf5": "night-3",
+        "aug01/rec1501650719-export.hdf5": "night-4",
+        "aug05/rec1501994881-export.hdf5": "night-5",
+        "aug09/rec1502336427-export.hdf5": "night-6",
+        "aug09/rec1502337436-export.hdf5": "night-7",
+        "jul16/rec1500220388-export.hdf5": "day-1",
+        "jul18/rec1500383971-export.hdf5": "day-2",
+        "jul18/rec1500402142-export.hdf5": "day-3",
+        "jul28/rec1501288723-export.hdf5": "day-4",
+        "jul29/rec1501349894-export.hdf5": "day-5",
+        "aug01/rec1501614399-export.hdf5": "day-6",
+        "aug08/rec1502241196-export.hdf5": "day-7",
+        "aug15/rec1502825681-export.hdf5": "day-8"
+    }
+    csv_file_path = os.path.join(spiker.SPIKER_DATA, "ddd17", "DDD17plus.csv")
+    recording_list = np.loadtxt(csv_file_path, dtype=str, delimiter=",")[:, 1]
+
+    frame_rate_dict = []
+    events_rate_dict = []
+    for data_item in recording_list:
+        rate_file = os.path.join(spiker.SPIKER_EXTRA, "exported-rate",
+                                 data_item[6:-5]+".pkl")
+        if not os.path.isfile(rate_file):
+            continue
+        with open(rate_file, "r") as f:
+            rate_dict = pickle.load(f)
+            f.close()
+        start_time = rate_dict[0]
+        end_time = rate_dict[1]
+        frame = rate_dict[2]
+        events = rate_dict[3]
+        peroid = (end_time-start_time)/1e6
+
+        frame_rate = frame/peroid
+        event_rate = events/peroid
+        frame_rate_dict.append(frame_rate)
+        events_rate_dict.append(event_rate)
+
+    frame_rate_dict = np.array(frame_rate_dict)
+    events_rate_dict = np.array(events_rate_dict)
+
+    print ("[MESSAGE] Frame rate: ", frame_rate_dict.mean())
+    print ("[MESSAGE] Event rate: ", events_rate_dict.mean())
+
+    attribute = "-fps-"
+    fig = plt.figure(figsize=(8, 4))
+    ax = fig.gca()
+    ax.hist(frame_rate_dict, bins=10, color="#666970",
+            linewidth=1.2, edgecolor="black")
+    plt.xlabel("fps", fontsize=15)
+    #  plt.ylabel("time (min)", fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.tight_layout()
+    #  plt.yscale("log")
+    plt.savefig(join(spiker.SPIKER_EXTRA, "cvprfigs",
+                     attribute+".pdf"),
+                dpi=600, format="pdf",
+                pad_inches=0.5)

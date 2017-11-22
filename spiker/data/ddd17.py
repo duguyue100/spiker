@@ -163,9 +163,13 @@ def prepare_train_data(file_name, target_size=(64, 86),
     elif y_name == "brake":
         Y = data_file["brake_pedal_status"][()][..., np.newaxis][
             first_f:-last_f]
+    elif y_name == "speed":
+        Y = data_file["vehicle_speed"][()][..., np.newaxis][
+            first_f:-last_f]
 
     num_data = Y.shape[0] if num_samples is None else num_samples
     Y = Y[:num_data]
+    num_data = Y.shape[0]  # to prevent too short videos
     if only_y is True:
         return Y
 

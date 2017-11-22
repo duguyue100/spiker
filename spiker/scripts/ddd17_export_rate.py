@@ -30,6 +30,7 @@ for data_item in recording_list:
     out_file = os.path.join(spiker.SPIKER_EXTRA, "exported-rate",
                             data_item[6:-5]+".pkl")
     if os.path.isfile(out_file):
+        print ("[MESSAGE] Skipping", out_file)
         continue
 
     f_in = ddd17.HDF5Stream(record_path, {'dvs'})

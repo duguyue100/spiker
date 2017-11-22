@@ -23,7 +23,7 @@ CV_AA = cv2.LINE_AA if int(cv2.__version__[0]) > 2 else cv2.CV_AA
 
 
 def plot_steering_wheel(img, steer_angles, colors=[(8, 48, 107)],
-                        thickness=[2]):
+                        thickness=[2], speed=0):
     """draw angles based on a list of predictions."""
     c, r = (173, 130), 65  # center, radius
     for angle_idx in xrange(len(steer_angles)):
@@ -33,15 +33,17 @@ def plot_steering_wheel(img, steer_angles, colors=[(8, 48, 107)],
         t = (c[0] + int(np.cos(a_rad) * r), c[1] - int(np.sin(a_rad) * r))
         cv2.line(img, c, t, colors[angle_idx],
                  thickness[angle_idx], CV_AA)
-    cv2.circle(img, c, r, (0, 0, 0), 1, CV_AA)
+    cv2.circle(img, c, r, (244, 66, 66), 1, CV_AA)
     # the label
-    cv2.line(img, (c[0]-r+5, c[1]), (c[0]-r, c[1]), (0, 0, 0), 1, CV_AA)
-    cv2.line(img, (c[0]+r-5, c[1]), (c[0]+r, c[1]), (0, 0, 0), 1, CV_AA)
-    cv2.line(img, (c[0], c[1]-r+5), (c[0], c[1]-r), (0, 0, 0), 1, CV_AA)
-    cv2.line(img, (c[0], c[1]+r-5), (c[0], c[1]+r), (0, 0, 0), 1, CV_AA)
+    cv2.line(img, (c[0]-r+5, c[1]), (c[0]-r, c[1]), (244, 66, 66), 1, CV_AA)
+    cv2.line(img, (c[0]+r-5, c[1]), (c[0]+r, c[1]), (244, 66, 66), 1, CV_AA)
+    cv2.line(img, (c[0], c[1]-r+5), (c[0], c[1]-r), (244, 66, 66), 1, CV_AA)
+    cv2.line(img, (c[0], c[1]+r-5), (c[0], c[1]+r), (244, 66, 66), 1, CV_AA)
     cv2.putText(img, 'gt: %0.1f deg' % steer_angles[0], (
-        c[0]-35, c[1]+30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0),
+        c[0]-35, c[1]+30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (244, 66, 66),
         1, CV_AA)
+    cv2.putText(img, '%d %s' % (speed, "km/h"), (160, 240),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (80, 244, 66), 1, CV_AA)
     return img
 
 
@@ -91,20 +93,20 @@ exp_names = {
 
 # construct experiment names
 exp_des = {
-    "jul09/rec1499656391-export.hdf5": "night-1",
-    "jul09/rec1499657850-export.hdf5": "night-2",
-    "aug01/rec1501649676-export.hdf5": "night-3",
-    "aug01/rec1501650719-export.hdf5": "night-4",
-    "aug05/rec1501994881-export.hdf5": "night-5",
-    "aug09/rec1502336427-export.hdf5": "night-6",
-    "aug09/rec1502337436-export.hdf5": "night-7",
-    "jul16/rec1500220388-export.hdf5": "day-1",
-    "jul18/rec1500383971-export.hdf5": "day-2",
-    "jul18/rec1500402142-export.hdf5": "day-3",
-    "jul28/rec1501288723-export.hdf5": "day-4",
-    "jul29/rec1501349894-export.hdf5": "day-5",
-    "aug01/rec1501614399-export.hdf5": "day-6",
-    "aug08/rec1502241196-export.hdf5": "day-7",
+    #  "jul09/rec1499656391-export.hdf5": "night-1",
+    #  "jul09/rec1499657850-export.hdf5": "night-2",
+    #  "aug01/rec1501649676-export.hdf5": "night-3",
+    #  "aug01/rec1501650719-export.hdf5": "night-4",
+    #  "aug05/rec1501994881-export.hdf5": "night-5",
+    #  "aug09/rec1502336427-export.hdf5": "night-6",
+    #  "aug09/rec1502337436-export.hdf5": "night-7",
+    #  "jul16/rec1500220388-export.hdf5": "day-1",
+    #  "jul18/rec1500383971-export.hdf5": "day-2",
+    #  "jul18/rec1500402142-export.hdf5": "day-3",
+    #  "jul28/rec1501288723-export.hdf5": "day-4",
+    #  "jul29/rec1501349894-export.hdf5": "day-5",
+    #  "aug01/rec1501614399-export.hdf5": "day-6",
+    #  "aug08/rec1502241196-export.hdf5": "day-7",
     "aug15/rec1502825681-export.hdf5": "day-8"
 }
 
@@ -141,15 +143,28 @@ for exp in exp_des:
                                         frame_cut=frame_cut,
                                         data_portion="test",
                                         data_type="uint8")
+    speed = ddd17.prepare_train_data(data_path,
+                                     target_size=None,
+                                     y_name="speed",
+                                     only_y=True,
+                                     frame_cut=frame_cut,
+                                     data_portion="test",
+                                     data_type="uint8")
     steer, steer_time = ddd17.export_data_field(
         origin_data_path, ['steering_wheel_angle'], frame_cut=frame_cut,
         data_portion="test")
     steering = steering[:num_samples]
     steer_time = steer_time[:num_samples]
+    speed = speed[:num_samples]
     steer_time -= steer_time[0]
+
+    #  num_y = 173
+    #  steering = steering[:num_y]
+    #  steer_time = steer_time[:num_y]
+    #  speed = speed[:num_y]
     # in ms
     steer_time = steer_time.astype("float32")/1e6
-    print (steer_time)
+    #  steer_time = np.arange(steering.shape[0])/10.
 
     # load prediction
     res_path = os.path.join(
@@ -185,17 +200,30 @@ for exp in exp_des:
     full_std_res = np.std(full_res, axis=0)*180.0/np.pi
     full_std_res = full_std_res[:num_samples]
     dvs_res = np.hstack(
-        (run_1[1], run_2[1], run_3[1], run_3[1])).T
+        (run_1[1], run_2[1], run_3[1], run_4[1])).T
     dvs_mean_res = np.mean(dvs_res, axis=0)*180.0/np.pi
     dvs_mean_res = dvs_mean_res[:num_samples]
     dvs_std_res = np.std(dvs_res, axis=0)*180.0/np.pi
     dvs_std_res = dvs_std_res[:num_samples]
     aps_res = np.hstack(
-        (run_1[2], run_2[2], run_3[2], run_3[2])).T
+        (run_1[2], run_2[2], run_3[2], run_4[2])).T
     aps_mean_res = np.mean(aps_res, axis=0)*180.0/np.pi
     aps_mean_res = aps_mean_res[:num_samples]
     aps_std_res = np.std(aps_res, axis=0)*180.0/np.pi
     aps_std_res = aps_std_res[:num_samples]
+
+    #  full_res = np.hstack(
+    #      (run_1[0], run_3[0], run_4[0])).T
+    #  full_mean_res = (np.mean(full_res, axis=0)*180.0/np.pi)[:num_y]
+    #  full_std_res = (np.std(full_res, axis=0)*180.0/np.pi)[:num_y]
+    #  dvs_res = np.hstack(
+    #      (run_1[1], run_3[1], run_4[1])).T
+    #  dvs_mean_res = (np.mean(dvs_res, axis=0)*180.0/np.pi)[:num_y]
+    #  dvs_std_res = (np.std(dvs_res, axis=0)*180.0/np.pi)[:num_y]
+    #  aps_res = np.hstack(
+    #      (run_1[2], run_3[2], run_4[2])).T
+    #  aps_mean_res = (np.mean(aps_res, axis=0)*180.0/np.pi)[:num_y]
+    #  aps_std_res = (np.std(aps_res, axis=0)*180.0/np.pi)[:num_y]
 
     # video properties
     fps = 20
@@ -222,8 +250,9 @@ for exp in exp_des:
             aps_frame_plot,
             [steering[idx]*180/np.pi, full_mean_res[idx],
              aps_mean_res[idx]],
-            [(107, 48, 8), (4, 39, 127), (27, 68, 0)],
-            [2, 1, 1])
+            [(8, 48, 107), (127, 39, 4), (0, 68, 27)],
+            [2, 1, 1],
+            speed[idx])
         aps_frame.imshow(aps_frame_plot)
         aps_frame.axis("off")
         aps_frame.set_title("APS Frame")
@@ -237,15 +266,18 @@ for exp in exp_des:
             dvs_frame_plot,
             [steering[idx]*180/np.pi, full_mean_res[idx],
              dvs_mean_res[idx]],
-            [(107, 48, 8), (4, 39, 127), (125, 0, 63)],
-            [2, 1, 1])
+            [(8, 48, 107), (127, 39, 4), (63, 0, 125)],
+            [2, 1, 1],
+            speed[idx])
         dvs_frame.imshow(dvs_frame_plot)
         dvs_frame.axis("off")
         dvs_frame.set_title("DVS Frame")
         fig.add_subplot(dvs_frame)
 
+        inner_grid = gridspec.GridSpecFromSubplotSpec(
+            2, 1, subplot_spec=outer_grid[1, 0])
         # plot steering curve
-        steering_curve = plt.Subplot(fig, outer_grid[1, 0])
+        steering_curve = plt.Subplot(fig, inner_grid[0, 0])
         min_steer = np.min(steering*180/np.pi)
         max_steer = np.max(steering*180/np.pi)
         steering_curve.plot(steer_time, dvs_mean_res,
@@ -288,8 +320,24 @@ for exp in exp_des:
         steering_curve.grid(linestyle="-.")
         steering_curve.legend(fontsize=10)
         steering_curve.set_ylabel("degree")
-        steering_curve.set_xlabel("time (s)")
+        #  steering_curve.set_xlabel("time (s)")
         fig.add_subplot(steering_curve)
+
+        speed_curve = plt.Subplot(fig, inner_grid[1, 0])
+        min_speed = np.min(speed)
+        max_speed = np.max(speed)
+        speed_curve.plot(steer_time, speed,
+                         color="black",
+                         linestyle="-",
+                         linewidth=2)
+        speed_curve.plot((steer_time[idx], steer_time[idx]),
+                         (min_speed, max_speed), color="black",
+                         linestyle="-", linewidth=1)
+        speed_curve.set_xlim(left=0, right=steer_time[-1])
+        speed_curve.grid(linestyle="-.")
+        speed_curve.set_ylabel("vehicle speed (km/h)")
+        speed_curve.set_xlabel("time (s)")
+        fig.add_subplot(speed_curve, sharex=steering_curve)
 
         outer_grid.tight_layout(fig)
 
