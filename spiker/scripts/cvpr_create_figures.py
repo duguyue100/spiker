@@ -119,7 +119,8 @@ def get_log_file_dict(env="day", mode="full", task="steering",
 #  option = "get-steer-loss-curves"
 #  option = "get-results-reproduce-steer-all"
 #  option = "export-images-for-dataset"
-option = "export-rate"
+#  option = "export-rate"
+option = "align-fps-events"
 
 if option == "get-full-results":
     steer_day_logs = get_log_file_dict("day", "full", "steering")
@@ -900,13 +901,14 @@ elif option == "get-steer-loss-curves":
                 aps_axis, aps_log[0][0]+aps_log[0][1],
                 aps_log[0][0]-aps_log[0][1],
                 facecolor="#3f007d", alpha=0.3)
+            plt.ylim([-0.1, 0.5])
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("loss", fontsize=15)
             plt.title("Training Loss")
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
             plt.grid(linestyle="-.")
-            plt.yscale("log")
+            #  plt.yscale("log")
             plt.legend(fontsize=15, shadow=True)
 
             # test loss
@@ -929,13 +931,14 @@ elif option == "get-steer-loss-curves":
                 aps_axis, aps_log[1][0]+aps_log[1][1],
                 aps_log[1][0]-aps_log[1][1],
                 facecolor="#3f007d", alpha=0.3)
+            plt.ylim([-0.1, 0.5])
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("loss", fontsize=15)
             plt.title("Testing Loss")
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
             plt.grid(linestyle="-.")
-            plt.yscale("log")
+            #  plt.yscale("log")
             plt.legend(fontsize=15, shadow=True)
 
             # train mse
@@ -958,13 +961,14 @@ elif option == "get-steer-loss-curves":
                 aps_axis, aps_log[2][0]+aps_log[2][1],
                 aps_log[2][0]-aps_log[2][1],
                 facecolor="#3f007d", alpha=0.3)
+            plt.ylim([-0.1, 0.5])
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("mse", fontsize=15)
             plt.title("Training MSE")
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
             plt.grid(linestyle="-.")
-            plt.yscale("log")
+            #  plt.yscale("log")
             plt.legend(fontsize=15, shadow=True)
 
             # test mse
@@ -987,13 +991,14 @@ elif option == "get-steer-loss-curves":
                 aps_axis, aps_log[3][0]+aps_log[3][1],
                 aps_log[3][0]-aps_log[3][1],
                 facecolor="#3f007d", alpha=0.3)
+            plt.ylim([-0.1, 0.5])
             plt.xlabel("epochs", fontsize=15)
             plt.ylabel("mse", fontsize=15)
             plt.title("Testing MSE")
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
             plt.grid(linestyle="-.")
-            plt.yscale("log")
+            #  plt.yscale("log")
             plt.legend(fontsize=15, shadow=True)
 
             plt.tight_layout()
@@ -1374,10 +1379,10 @@ elif option == "export-rate":
     print ("[MESSAGE] Frame rate: ", frame_rate_dict.mean())
     print ("[MESSAGE] Event rate: ", events_rate_dict.mean())
 
-    attribute = "events"
+    attribute = "fps"
     fig = plt.figure(figsize=(8, 4))
     ax = fig.gca()
-    ax.hist(events_rate_dict, bins=40, color="#666970",
+    ax.hist(frame_rate_dict, bins=20, color="#666970",
             linewidth=1.2, edgecolor="black")
     plt.xlabel("fps", fontsize=15)
     #  plt.ylabel("time (min)", fontsize=15)
@@ -1389,3 +1394,34 @@ elif option == "export-rate":
                      attribute+".pdf"),
                 dpi=600, format="pdf",
                 pad_inches=0.5)
+elif option == "align-fps-events":
+    csv_file_path = os.path.join(spiker.SPIKER_DATA, "ddd17", "DDD17plus.csv")
+    recording_list = np.loadtxt(csv_file_path, dtype=str, delimiter=",")[:, 1]
+
+    original_file_path = os.path.join(spiker.SPIKER_EXTRA, "DDD17-export.csv")
+
+    frame_rate_dict = []
+    events_rate_dict = []
+    data = np.zeros((recording_list.shape[0], 2))
+    for data_idx in xrange(recording_list.shape[0]):
+        rate_file = os.path.join(
+            spiker.SPIKER_EXTRA, "exported-rate",
+            recording_list[data_idx][6:-5]+".pkl")
+        if not os.path.isfile(rate_file):
+            continue
+        with open(rate_file, "r") as f:
+            rate_dict = pickle.load(f)
+            f.close()
+        start_time = rate_dict[0]
+        end_time = rate_dict[1]
+        frame = rate_dict[2]
+        events = rate_dict[3]
+        peroid = (end_time-start_time)/1e6
+
+        frame_rate = frame/peroid
+        event_rate = events/peroid
+        data[data_idx, 0] = frame_rate
+        data[data_idx, 1] = event_rate
+
+    np.savetxt(os.path.join(spiker.SPIKER_EXTRA, "fps-event.csv"),
+               data, delimiter=",", fmt="%.2f")
