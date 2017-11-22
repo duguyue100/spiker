@@ -1374,10 +1374,10 @@ elif option == "export-rate":
     print ("[MESSAGE] Frame rate: ", frame_rate_dict.mean())
     print ("[MESSAGE] Event rate: ", events_rate_dict.mean())
 
-    attribute = "-fps-"
+    attribute = "events"
     fig = plt.figure(figsize=(8, 4))
     ax = fig.gca()
-    ax.hist(frame_rate_dict, bins=10, color="#666970",
+    ax.hist(events_rate_dict, bins=40, color="#666970",
             linewidth=1.2, edgecolor="black")
     plt.xlabel("fps", fontsize=15)
     #  plt.ylabel("time (min)", fontsize=15)
