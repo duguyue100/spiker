@@ -1,0 +1,14 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Spiker\n\n\nA python event-based processing library.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#spiker", 
+            "text": "A python event-based processing library.", 
+            "title": "Spiker"
+        }
+    ]
+}
