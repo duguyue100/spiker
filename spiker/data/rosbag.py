@@ -16,7 +16,7 @@ logger = log.get_logger("rosbag-module", log.DEBUG)
 try:
     import rosbag
 except ImportError:
-    log.logger.warning("You need to install ROS to enable this module.")
+    logger.warning("You need to install ROS to enable this module.")
 
 
 def get_topics(bag, topic_filters=None):
