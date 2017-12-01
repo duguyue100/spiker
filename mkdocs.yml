@@ -1,0 +1,9 @@
+site_name: Spiker Documentation
+theme: readthedocs
+docs_dir: docs
+repo_url: https://github.com/duguyue100/spiker
+
+site_description: 'Documentation for Spiker, a python event-based processing library.'
+
+pages:
+    - Home: index.md

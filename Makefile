@@ -476,6 +476,9 @@ ddd17-export-prediction:
 ddd17-export-rate:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_export_rate.py
 
+rosbag-test:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/rosbag_test.py
+
 # Experiments
 
 resnet-steering-3-5:
