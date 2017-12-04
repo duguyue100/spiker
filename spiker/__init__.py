@@ -9,6 +9,10 @@ from __future__ import print_function
 import os
 
 from spiker import utils
+from spiker import log
+
+# System logging level
+LOG_LEVEL = log.DEBUG
 
 # setup basic environment
 HOME = os.environ["HOME"]

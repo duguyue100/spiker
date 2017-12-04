@@ -13,8 +13,6 @@ Email : duguyue100@gmail.com
 from __future__ import print_function
 import logging
 
-import spiker
-
 # remap logging levels for easy access
 NOTSET = logging.NOTSET
 DEBUG = logging.DEBUG

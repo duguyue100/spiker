@@ -9,9 +9,10 @@ Email : duguyue100@gmail.com
 """
 from __future__ import print_function
 
+import spiker
 from spiker import log
 
-logger = log.get_logger("rosbag-module", log.DEBUG)
+logger = log.get_logger("rosbag-module", spiker.LOG_LEVEL)
 
 try:
     import rosbag
