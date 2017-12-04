@@ -22,5 +22,13 @@ bag = rosbag.Bag(bag_path)
 
 logger.info(rb.get_topics(bag))
 
-#  for topic, msg, t in bag.read_messages():
-#      print (topic)
+idx = 0
+for topic, msg, t in bag.read_messages(topics=["/dvs/events"]):
+    logger.info(topic)
+    #  logger.info(msg)
+    logger.info(t)
+
+    idx += 1
+
+    if idx == 100:
+        break
