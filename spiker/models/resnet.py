@@ -8,18 +8,24 @@ Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
 from __future__ import print_function
-
 from builtins import range
 
-from keras.layers import Input
-from keras.layers import Dense
-from keras.layers import Conv2D
-from keras.layers import BatchNormalization
-from keras.layers import Activation
-from keras.layers import GlobalAveragePooling2D
-from keras.layers import add
-from keras.models import Model
-from keras.regularizers import l2
+from spiker import log
+
+logger = log.get_logger("models-resnet", log.DEBUG)
+
+try:
+    from keras.layers import Input
+    from keras.layers import Dense
+    from keras.layers import Conv2D
+    from keras.layers import BatchNormalization
+    from keras.layers import Activation
+    from keras.layers import GlobalAveragePooling2D
+    from keras.layers import add
+    from keras.models import Model
+    from keras.regularizers import l2
+except ImportError:
+    logger.critical("There is no keras available.")
 
 
 def resnet_block(input_tensor, kernel_size,

@@ -8,10 +8,14 @@ import os
 
 import numpy as np
 
+from spiker import log
+
+logger = log.get_logger("models-utils", log.DEBUG)
+
 try:
     from keras.models import load_model
 except ImportError:
-    print ("[MESSAGE] There is no keras available.")
+    logger.critical("There is no keras available.")
 
 
 def keras_load_model(model_file, verbose=False):
@@ -55,8 +59,8 @@ def keras_predict_batch(model, data, batch_size=64, verbose=False):
         Y_predict = y_predict if Y_predict.size == 0 else \
             np.vstack((Y_predict, y_predict))
         if verbose is True:
-            print ("[MESSAGE] Processed %d/%d, size: %d"
-                   % (batch+1, num_test//batch_size, Y_predict.shape[0]))
+            logger.info("Processed %d/%d, size: %d"
+                        % (batch+1, num_test//batch_size, Y_predict.shape[0]))
     # only do one more pass if there is reminder
     if num_test % batch_size != 0:
         y_predict = model.predict(data[-(num_test % batch_size):])
@@ -86,6 +90,6 @@ def parse_csv_log(csv_log_path, verbose=False):
         usecols=(1, 2, 3, 4))
 
     if verbose is True:
-        print ("[MESSSAGE] Available fields are:", log_data.dtype.names)
+        logger.info("Available fields are:", log_data.dtype.names)
 
     return log_data
