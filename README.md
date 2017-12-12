@@ -16,6 +16,13 @@ Spiking Processors, etc). The low level functions are supported by
 $ git clone --recursive https://github.com/duguyue100/spiker.git
 ```
 
+## Requirements
+
++   `future`
++   `numpy`
++   `keras`
++   `tensorflow`
+
 ## Contacts
 
 Yuhuang Hu  
