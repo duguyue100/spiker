@@ -1,1 +1,0 @@
-{"frame_cut": [200, 1000], "blocks": 5, "nb_epoch": 200, "data_name": "jul28/rec1501288723-export.hdf5", "filter_list": [[16, 16, 16], [32, 32, 32], [64, 64, 64]], "channel_id": 0, "batch_size": 64, "stages": 3, "model_name": "brake-day-4-dvs"}

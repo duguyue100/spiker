@@ -1,1 +1,0 @@
-{"frame_cut": [500, 800], "blocks": 5, "nb_epoch": 200, "data_name": "jul09/rec1499657850-export.hdf5", "filter_list": [[16, 16, 16], [32, 32, 32], [64, 64, 64]], "channel_id": 1, "batch_size": 64, "stages": 3, "model_name": "steering-night-2-aps"}
