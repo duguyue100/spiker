@@ -25,7 +25,7 @@ def makedir(path, log_msg=None, verbose=False):
     """
     try:
         os.makedirs(path)
-        log.log(log_msg)
+        logger.info(log_msg)
     except OSError:
         if verbose is True:
             logger.info("The path %s exists" % path)
@@ -45,7 +45,7 @@ def makefile(file_path, log_msg=None, verbose=False):
     if not os.path.isfile(file_path):
         with open(file_path, "a"):
             os.utime(file_path, None)
-        log.log(log_msg)
+        logger.info(log_msg)
     else:
         if verbose is True:
             logger.info("The file %s exists" % file_path)

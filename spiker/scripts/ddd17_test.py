@@ -90,9 +90,9 @@ merged = ddd17.MergedStream(f_in)
 time_start = merged.tmin+1e6*0
 time_stop = merged.tmax
 
-log.log(time_start)
-log.log(time_stop)
-log.log((time_stop-time_start)/1e6/60)
+print(time_start)
+print(time_stop)
+print((time_stop-time_start)/1e6/60)
 
 # find the start point
 merged.search(time_start)
