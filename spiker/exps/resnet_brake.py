@@ -50,20 +50,20 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
     model_file_base = os.path.join(model_path, model_name)
 
     # print model info
-    log.log("[MESSAGE] Model Name: %s" % (model_name))
-    log.log("[MESSAGE] Number of epochs: %d" % (nb_epoch))
-    log.log("[MESSAGE] Batch Size: %d" % (batch_size))
-    log.log("[MESSAGE] Number of stages: %d" % (stages))
-    log.log("[MESSAGE] Number of blocks: %d" % (blocks))
+    print("[MESSAGE] Model Name: %s" % (model_name))
+    print("[MESSAGE] Number of epochs: %d" % (nb_epoch))
+    print("[MESSAGE] Batch Size: %d" % (batch_size))
+    print("[MESSAGE] Number of stages: %d" % (stages))
+    print("[MESSAGE] Number of blocks: %d" % (blocks))
 
     # load data
     data_path = os.path.join(spiker.SPIKER_DATA, "ddd17",
                              data_name)
     if not os.path.isfile(data_path):
         raise ValueError("This dataset does not exist at %s" % (data_path))
-    log.log("[MESSAGE] Dataset %s" % (data_path))
+    print("[MESSAGE] Dataset %s" % (data_path))
     assert len(frame_cut) == 2
-    log.log("[MESSAGE] Frame cut: first at %d, last at %d"
+    print("[MESSAGE] Frame cut: first at %d, last at %d"
             % (frame_cut[0], -frame_cut[1]))
     frames, steering = ddd17.prepare_train_data(
         data_path, y_name="brake",
@@ -83,9 +83,9 @@ def resnet_exp(model_name, data_name, channel_id, stages, blocks, filter_list,
         X_train = X_train[:, :, :, channel_id][..., np.newaxis]
         X_test = X_test[:, :, :, channel_id][..., np.newaxis]
 
-    log.log("[MESSAGE] Number of samples %d" % (num_samples))
-    log.log("[MESSAGE] Number of train samples %d" % (X_train.shape[0]))
-    log.log("[MESSAGE] Number of test samples %d" % (X_test.shape[0]))
+    print("[MESSAGE] Number of samples %d" % (num_samples))
+    print("[MESSAGE] Number of train samples %d" % (X_train.shape[0]))
+    print("[MESSAGE] Number of test samples %d" % (X_test.shape[0]))
 
     # setup image shape
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
