@@ -4,13 +4,14 @@ Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import os
 
 from spiker import log
 
 logger = log.get_logger("utils", log.DEBUG)
+
 
 def makedir(path, log_msg=None, verbose=False):
     """Make directory.

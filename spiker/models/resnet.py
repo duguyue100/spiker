@@ -7,7 +7,7 @@ Follows fchollet's design
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 from builtins import range
 
 from spiker import log

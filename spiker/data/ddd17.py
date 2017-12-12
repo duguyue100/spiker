@@ -13,7 +13,7 @@ https://code.ini.uzh.ch/jbinas/ddd17-utils
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 
 import time

@@ -10,7 +10,7 @@ TODO: I need to think through this.
 Author: Yuhuang Hu
 Email : duguyue100@gmail.com
 """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import logging
 
 # remap logging levels for easy access
