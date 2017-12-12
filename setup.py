@@ -40,6 +40,17 @@ setup(
 
     url=about["__url__"],
 
+    install_requires=["numpy",
+                      "scipy",
+                      "future",
+                      "multiprocess"],
+    extras_require={
+          "h5py": ["h5py"],
+          "deep-learning": ["Keras"],
+          "visualize": ["pydot>=1.2.0"],
+          "robotics": ["rosbag"]
+      },
+
     packages=find_packages(),
 
     classifiers=list(filter(None, classifiers.split('\n'))),
