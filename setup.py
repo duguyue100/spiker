@@ -5,6 +5,7 @@ Email : yuhuang.hu@uzh.ch
 """
 
 from setuptools import setup
+from setuptools import find_packages
 
 classifiers = """
 Development Status :: 2 - Pre-Alpha
@@ -39,7 +40,7 @@ setup(
 
     url=about["__url__"],
 
-    packages=["spiker"],
+    packages=find_packages(),
 
     classifiers=list(filter(None, classifiers.split('\n'))),
     description="Spiker - Python framework for event-driven processing."
