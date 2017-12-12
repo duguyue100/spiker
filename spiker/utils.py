@@ -10,6 +10,7 @@ import os
 
 from spiker import log
 
+logger = log.get_logger("utils", log.DEBUG)
 
 def makedir(path, log_msg=None, verbose=False):
     """Make directory.
@@ -27,7 +28,7 @@ def makedir(path, log_msg=None, verbose=False):
         log.log(log_msg)
     except OSError:
         if verbose is True:
-            log.log("The path %s exists" % path)
+            logger.info("The path %s exists" % path)
 
 
 def makefile(file_path, log_msg=None, verbose=False):
@@ -47,7 +48,7 @@ def makefile(file_path, log_msg=None, verbose=False):
         log.log(log_msg)
     else:
         if verbose is True:
-            log.log("The file %s exists" % file_path)
+            logger.info("The file %s exists" % file_path)
 
 
 def makedirs(path_list, log_msg=None, verbose=False):
@@ -63,7 +64,7 @@ def makedirs(path_list, log_msg=None, verbose=False):
     """
     for path in path_list:
         makedir(path, verbose=verbose)
-    log.log(log_msg)
+    logger.info(log_msg)
 
 
 def makefiles(filepath_list, log_msg=None, verbose=False):
@@ -79,4 +80,4 @@ def makefiles(filepath_list, log_msg=None, verbose=False):
     """
     for filename in filepath_list:
         makefile(filename, verbose=verbose)
-    log.log(log_msg)
+    logger.info(log_msg)
