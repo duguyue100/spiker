@@ -24,21 +24,19 @@ Topic :: Software Development :: Libraries :: Python Modules
 License :: OSI Approved :: MIT License
 """
 
-try:
-    from spiker import __about__
-    about = __about__.__dict__
-except ImportError:
-    about = dict()
-    exec(open("spiker/__about__.py").read(), about)
+__version__ = "0.1.0-alpha.3"
+__author__ = "Yuhuang Hu"
+__author_email__ = "yuhuang.hu@ini.uzh.ch"
+__url__ = "https://github.com/duguyue100/spiker"
 
 setup(
     name='spiker',
-    version=about["__version__"],
+    version=__version__,
 
-    author=about["__author__"],
-    author_email=about["__author_email__"],
+    author=__author__,
+    author_email=__author_email__,
 
-    url=about["__url__"],
+    url=__url__,
 
     install_requires=["numpy",
                       "scipy",
