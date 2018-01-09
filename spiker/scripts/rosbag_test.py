@@ -80,17 +80,17 @@ pwm_time_ds = pwm_group.create_dataset(
 # DVS data
 dvs_data_ds = dvs_group.create_dataset(
     name="event_loc",
-    shape=(1, 2),
+    shape=(0, 2),
     maxshape=(None, 2),
     dtype="uint16")
 dvs_time_ds = dvs_group.create_dataset(
     name="event_ts",
-    shape=(1,),
+    shape=(0,),
     maxshape=(None,),
     dtype="int64")
 dvs_pol_ds = dvs_group.create_dataset(
     name="event_pol",
-    shape=(1,),
+    shape=(0,),
     maxshape=(None,),
     dtype="bool")
 
@@ -101,7 +101,6 @@ topics_list = ["/dvs/image_raw", "/dvs/events", "/dvs/imu",
 frame_idx = 0
 pwm_idx = 0
 event_packet_idx = 0
-resize_flag = False
 for topic, msg, t in bag.read_messages(topics=topics_list):
     if topic in ["/dvs/image_raw"]:
         image = rb.get_image(msg)
@@ -149,11 +148,7 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
             # event polarity
             events_pol_arr[event_idx] = events[event_idx].polarity
 
-        if resize_flag is False and event_packet_idx == 0:
-            resized_shape = num_events
-            resize_flag = True
-        else:
-            resized_shape = dvs_data_ds.shape[0]+num_events
+        resized_shape = dvs_data_ds.shape[0]+num_events
 
         dvs_data_ds.resize(resized_shape, axis=0)
         dvs_time_ds.resize(resized_shape, axis=0)
