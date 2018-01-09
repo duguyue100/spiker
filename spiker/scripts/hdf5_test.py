@@ -29,11 +29,10 @@ logger.info(dataset["dvs/event_pol"].shape)
 
 aps_time = dataset["aps/aps_ts"][()]
 pwm_time = dataset["extra/pwm/pwm_ts"][()]
-dvs_time = dataset["dvs/event_ts"][10000000:10005000][()]
+dvs_time = dataset["dvs/event_ts"][19]
 
 logger.info(aps_time[0])
 logger.info(pwm_time[0])
-logger.info(dvs_time)
 
 time_shift = aps_time[0]
 

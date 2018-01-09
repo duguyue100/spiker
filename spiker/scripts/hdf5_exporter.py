@@ -15,6 +15,24 @@ import spiker
 from spiker import log
 
 
+def find_dvs_time_idx(dataset, time, idx_base=0, mode="pre", step=1024):
+    """Find DVS index that is pre or post of given time.
+
+    assume time at idx_base is smaller than time given
+    """
+    curr_idx = idx_base
+    while (dataset["dvs/event_ts"][curr_idx] < time):
+        if curr_idx+step < dataset["dvs/event_ts"].shape[0]-1:
+            curr_idx += step
+        else:
+            break
+
+    if mode == "pre":
+        return curr_idx-step
+    else:
+        return curr_idx
+
+
 def determine_aps_cut(aps_time, pwm_time):
     """Determine data start point.
 
@@ -45,6 +63,7 @@ def determine_aps_cut(aps_time, pwm_time):
 logger = log.get_logger("hdf5-exporter", log.INFO)
 
 dvs_bin_size = 100  # ms
+clip_value = 8
 
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
@@ -61,6 +80,7 @@ aps_head, pwm_head, aps_tail, pwm_tail = determine_aps_cut(aps_time, pwm_time)
 aps_data = dataset["aps/aps_data"][aps_head:aps_tail][()]
 aps_time = aps_time[aps_head:aps_tail]
 num_imgs = aps_data.shape[0]
+img_shape = (aps_data.shape[1], aps_data.shape[2])
 pwm_data = dataset["extra/pwm/pwm_data"][pwm_head:pwm_tail][()]
 pwm_time = pwm_time[pwm_head:pwm_tail]
 num_cmds = pwm_data.shape[0]
@@ -80,6 +100,8 @@ dvs_data_new = np.zeros((num_samples, aps_data.shape[1], aps_data.shape[2]),
 pwm_data_new = np.zeros((num_samples, pwm_data.shape[1]), dtype=np.float32)
 pwm_data_new[0] = pwm_data[0]
 aps_data_new[0] = aps_data[0]
+# fastforward to current time
+curr_dvs_idx = find_dvs_time_idx(dataset, mode="post")
 for cmd_idx in range(1, num_cmds):
     # current command time
     curr_cmd_time = pwm_time[cmd_idx]
@@ -95,24 +117,51 @@ for cmd_idx in range(1, num_cmds):
         pass
     else:
         # there is frame(s) between two command
-        for idx in range(frame_idxs.shape[0]-1):
-            pwm_data_new[frame_idxs[idx]] = \
-                (pwm_data[cmd_idx]+pwm_data[cmd_idx-1])/2
-            aps_data_new[frame_idxs[idx]] = aps_data[frame_idxs[idx]]
+        for idx in range(frame_idxs.shape[0]):
+            if idx < frame_idxs.shape[0]-1:
+                pwm_data_new[frame_idxs[idx]] = \
+                    (pwm_data[cmd_idx]+pwm_data[cmd_idx-1])/2
+                aps_data_new[frame_idxs[idx]] = aps_data[frame_idxs[idx]]
+            else:
+                pwm_data_new[frame_idxs[-1]] = pwm_data[cmd_idx]
+                aps_data_new[frame_idxs[-1]] = aps_data[frame_idxs[-1]]
             # make dvs between current and next frame
-            #  bin_size = min(
-            #      (aps_time[frame_idxs[idx]+1]-aps_time[frame_idxs[idx]])/1e3,
-            #      dvs_bin_size)
+            if frame_idxs[idx] < aps_time.shape[0]-1:
+                bin_size = min(
+                    (aps_time[frame_idxs[idx]+1] -
+                     aps_time[frame_idxs[idx]])/1e3,
+                    dvs_bin_size)
+            else:
+                bin_size = dvs_bin_size
             # find event range and bind the frame
-
-        # assign last frame to the steering
-        pwm_data_new[frame_idxs[-1]] = pwm_data[cmd_idx]
-        aps_data_new[frame_idxs[-1]] = aps_data[frame_idxs[-1]]
-        # make dvs between current and next frame
-        #  bin_size = min(
-        #      (aps_time[frame_idxs[-1]+1]-aps_time[frame_idxs[-1]])/1e3,
-        #      dvs_bin_size)
-        # find event range and bind the frame
+            curr_dvs_idx = find_dvs_time_idx(
+                dataset, aps_time[frame_idxs[idx]],
+                curr_dvs_idx, mode="post")
+            next_dvs_idx = find_dvs_time_idx(
+                dataset, aps_time[frame_idxs[idx]]+bin_size,
+                curr_dvs_idx)
+            curr_dvs_loc = \
+                dataset["dvs/event_loc"][curr_dvs_idx:next_dvs_idx][()]
+            curr_dvs_pol = \
+                dataset["dvs/event_pol"][curr_dvs_idx:next_dvs_idx][()]
+            # fast-forward
+            curr_dvs_idx = next_dvs_idx
+            # bind events
+            _histrange = [(0, v) for v in img_shape]
+            pol_on = (curr_dvs_pol[:] is True)
+            pol_off = np.logical_not(pol_on)
+            img_on, _, _ = np.histogram2d(
+                    curr_dvs_loc[pol_on, 1], curr_dvs_loc[pol_on, 0],
+                    bins=img_shape, range=_histrange)
+            img_off, _, _ = np.histogram2d(
+                    curr_dvs_loc[pol_off, 1], curr_dvs_loc[pol_off, 0],
+                    bins=img_shape, range=_histrange)
+            if clip_value is not None:
+                integrated_img = np.clip(
+                    (img_on-img_off), -clip_value, clip_value)
+            else:
+                integrated_img = (img_on-img_off)
+            dvs_data_new[frame_idxs[idx]] = integrated_img
 
 dataset.close()
 
