@@ -24,7 +24,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 License :: OSI Approved :: MIT License
 """
 
-__version__ = "0.1.0-alpha.3"
+__version__ = "0.1.0-alpha.4"
 __author__ = "Yuhuang Hu"
 __author_email__ = "yuhuang.hu@ini.uzh.ch"
 __url__ = "https://github.com/duguyue100/spiker"

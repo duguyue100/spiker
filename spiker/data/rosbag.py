@@ -23,6 +23,8 @@ logger = log.get_logger("rosbag-module", spiker.LOG_LEVEL)
 
 try:
     import rosbag
+    from cv_bridge import CvBridge, CvBridgeError
+    frame_bridge = CvBridge()
 except ImportError:
     logger.warning("You need to install ROS to enable this module.")
 
@@ -55,3 +57,32 @@ def get_yaml_description(bag_path):
     return yaml.load(subprocess.Popen(
         ["rosbag", "info", "--yaml", bag_path],
         std=subprocess.PIPE).communicate()[0])
+
+
+def get_image(msg, encoding="mono8"):
+    """Get image from a valid message.
+
+    # Parameters
+    msg : a ROS message that contains image data
+
+    # Returns
+    frame : numpy.ndarray
+        numpy array
+    """
+    return frame_bridge.imgmsg_to_cv2(msg, encoding)
+
+
+def get_msg_count(bag, topic):
+    """Get number of instances for the topic.
+
+    # Parameters
+    bag : rosbag.Bag
+        a target rosbag
+    topic : string
+        a valid topic name
+
+    # Returns
+    num_msgs : int
+        number of messages in the topic
+    """
+    return bag.get_message_count(topic)
