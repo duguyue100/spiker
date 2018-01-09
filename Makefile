@@ -31,3 +31,9 @@ ddd17-test:
 
 rosbag-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/rosbag_test.py
+
+hdf5-test:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/hdf5_test.py
+
+hdf5-exporter:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/hdf5_exporter.py
