@@ -167,7 +167,4 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
                        msg.header.seq))
         event_packet_idx += 1
 
-        if event_packet_idx > 99:
-            break
-
 dataset.close()
