@@ -80,24 +80,28 @@ pwm_time_ds = pwm_group.create_dataset(
 # DVS data
 dvs_data_ds = dvs_group.create_dataset(
     name="event_loc",
+    shape=(1, 2),
     maxshape=(None, 2),
     dtype="uint16")
 dvs_time_ds = dvs_group.create_dataset(
     name="event_ts",
+    shape=(1,),
     maxshape=(None,),
     dtype="int64")
 dvs_pol_ds = dvs_group.create_dataset(
     name="event_pol",
+    shape=(1,),
     maxshape=(None,),
     dtype="bool")
 
 # topic list
-topics_list = ["/dvs/events"]
-#  topics_list = ["/dvs/image_raw", "/dvs/events", "/dvs/imu",
-#                 "/raw_pwm"]
+topics_list = ["/dvs/image_raw", "/dvs/events", "/dvs/imu",
+               "/raw_pwm"]
 
 frame_idx = 0
 pwm_idx = 0
+event_packet_idx = 0
+resize_flag = False
 for topic, msg, t in bag.read_messages(topics=topics_list):
     if topic in ["/dvs/image_raw"]:
         image = rb.get_image(msg)
@@ -105,12 +109,13 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
         secs = msg.header.stamp.secs
         nsecs = msg.header.stamp.nsecs
         # time in microsec
-        time_stamp = str(secs)+str(nsecs)[:6]
+        time_stamp = str(secs)+"{:>09d}".format(nsecs)[:6]
         time_stamp = int(time_stamp)
-        logger.info("Time: %s" % (time_stamp))
 
         aps_frame_ds[frame_idx] = image
         aps_time_ds[frame_idx] = time_stamp
+        logger.info("Processed %d/%d Frame"
+                    % (frame_idx, num_images))
         frame_idx += 1
     elif topic in ["/raw_pwm"]:
         steering = msg.steering
@@ -120,6 +125,8 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
 
         pwm_data_ds[pwm_idx] = np.array([steering, throttle, gear_shift])
         pwm_time_ds[pwm_idx] = time_stamp
+        logger.info("Processed %d/%d PWM packet"
+                    % (pwm_idx, num_pwm_pkgs))
         pwm_idx += 1
     elif topic in ["/dvs/events"]:
         events = msg.events
@@ -134,23 +141,33 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
             events_loc_arr[event_idx, 1] = events[event_idx].y
 
             # event timestamp
-            time_stamp = str(events[event_idx].secs) + \
-                str(events[event_idx].nsecs)[:6]
+            time_stamp = str(events[event_idx].ts.secs) + \
+                "{:>09d}".format(events[event_idx].ts.nsecs)[:6]
             time_stamp = int(time_stamp)
             events_ts_arr[event_idx] = time_stamp
 
             # event polarity
             events_pol_arr[event_idx] = events[event_idx].polarity
 
-        dvs_data_ds.resize(dvs_data_ds.shape[0]+num_events,
-                           axis=0)
-        dvs_time_ds.resize(dvs_time_ds.shape[0]+num_events,
-                           axis=0)
-        dvs_pol_ds.resize(dvs_pol_ds.shape[0]+num_events,
-                          axis=0)
+        if resize_flag is False and event_packet_idx == 0:
+            resized_shape = num_events
+            resize_flag = True
+        else:
+            resized_shape = dvs_data_ds.shape[0]+num_events
 
-        dvs_data_ds[:-num_events] = events_loc_arr
-        dvs_time_ds[:-num_events] = events_ts_arr
-        dvs_pol_ds[:-num_events] = events_pol_arr
+        dvs_data_ds.resize(resized_shape, axis=0)
+        dvs_time_ds.resize(resized_shape, axis=0)
+        dvs_pol_ds.resize(resized_shape, axis=0)
+
+        dvs_data_ds[-num_events:] = events_loc_arr
+        dvs_time_ds[-num_events:] = events_ts_arr
+        dvs_pol_ds[-num_events:] = events_pol_arr
+        logger.info("Processed %d/%d event packet, Seq: %d"
+                    % (event_packet_idx, num_event_pkgs,
+                       msg.header.seq))
+        event_packet_idx += 1
+
+        if event_packet_idx > 99:
+            break
 
 dataset.close()
