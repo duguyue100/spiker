@@ -7,6 +7,7 @@ from __future__ import print_function, absolute_import
 from builtins import range
 import os
 
+import cv2
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
@@ -18,32 +19,26 @@ logger = log.get_logger("hdf5-test", log.INFO)
 
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_test.hdf5")
+    "ccw_foyer_record_12_12_17_test_exported.hdf5")
 
 dataset = h5py.File(hdf5_path, "r")
 
-logger.info(dataset["aps/aps_data"].shape)
-logger.info(dataset["dvs/event_loc"].shape)
-logger.info(dataset["dvs/event_ts"].shape)
-logger.info(dataset["dvs/event_pol"].shape)
+logger.info(dataset["aps"].shape)
+logger.info(dataset["dvs"].shape)
+logger.info(dataset["pwm"].shape)
 
-aps_time = dataset["aps/aps_ts"][()]
-pwm_time = dataset["extra/pwm/pwm_ts"][()]
-dvs_time = dataset["dvs/event_ts"][19]
-
-logger.info(aps_time[0])
-logger.info(pwm_time[0])
-
-time_shift = aps_time[0]
-
-aps_time -= time_shift
-aps_y = np.ones((aps_time.shape[0],))
-pwm_time -= time_shift
-pwm_y = np.ones((pwm_time.shape[0],))*1.1
+pwm_data = dataset["pwm"][()]
 
 plt.figure()
-#  plt.plot(aps_time, aps_y, "go")
-plt.plot(aps_time, aps_y, "go", pwm_time, pwm_y, "ro")
+# steering data
+plt.plot(pwm_data[:, 0])
 plt.show()
+
+for frame_id in range(dataset["aps"].shape[0]):
+    cv2.imshow("aps", dataset["aps"][frame_id][()])
+    cv2.imshow("dvs", dataset["dvs"][frame_id][()]/float(8*2))
+
+    if cv2.waitKey(60) & 0xFF == ord('q'):
+        break
 
 dataset.close()
