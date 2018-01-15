@@ -67,7 +67,7 @@ clip_value = 8
 
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_test.hdf5")
+    "ccw_foyer_record_12_12_17.hdf5")
 
 dataset = h5py.File(hdf5_path, "r")
 
@@ -176,7 +176,7 @@ dataset.close()
 #  write to new file
 hdf5_path_new = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_test_exported.hdf5")
+    "ccw_foyer_record_12_12_17_exported.hdf5")
 
 dataset = h5py.File(hdf5_path_new, "w")
 
