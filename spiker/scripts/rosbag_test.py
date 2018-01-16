@@ -19,10 +19,8 @@ logger = log.get_logger("rosbag-test", log.INFO)
 
 bag_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "sidewalk-3.bag")
-hdf5_path = os.path.join(
-    spiker.SPIKER_DATA, "rosbag",
-    "sidewalk-3.hdf5")
+    "cw_foyer_record_12_12_17.bag")
+hdf5_path = bag_path[:-4]+".hdf5"
 
 bag = rosbag.Bag(bag_path, "r")
 
@@ -105,15 +103,8 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
     if topic in ["/dvs/image_raw"]:
         image = rb.get_image(msg)
 
-        #  secs = msg.header.stamp.secs
-        #  nsecs = msg.header.stamp.nsecs
-        # time in microsec
-        #  time_stamp = str(secs)+"{:>09d}".format(nsecs)[:6]
-        #  time_stamp = int(time_stamp)
-        time_stamp = int(msg.header.stamp.to_sec()*1e6)
-
         aps_frame_ds[frame_idx] = image
-        aps_time_ds[frame_idx] = time_stamp
+        aps_time_ds[frame_idx] = msg.header.stamp.to_nsec()//1000
         logger.info("Processed %d/%d Frame"
                     % (frame_idx, num_images))
         frame_idx += 1
@@ -131,24 +122,14 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
     elif topic in ["/dvs/events"]:
         events = msg.events
         num_events = len(events)
-        events_loc_arr = np.zeros((num_events, 2), dtype=np.uint16)
-        events_ts_arr = np.zeros((num_events,), dtype=np.int64)
-        events_pol_arr = np.zeros((num_events,), dtype=np.bool)
 
-        for event_idx in range(num_events):
-            # event location
-            events_loc_arr[event_idx, 0] = events[event_idx].x
-            events_loc_arr[event_idx, 1] = events[event_idx].y
-
-            # event timestamp
-            time_stamp = int(events[event_idx].ts.to_sec()*1e6)
-            #  time_stamp = str(events[event_idx].ts.secs) + \
-            #      "{:>09d}".format(events[event_idx].ts.nsecs)[:6]
-            #  time_stamp = int(time_stamp)
-            events_ts_arr[event_idx] = time_stamp
-
-            # event polarity
-            events_pol_arr[event_idx] = events[event_idx].polarity
+        # export events
+        events_loc_arr = np.array([[x.x, x.y] for x in events],
+                                  dtype=np.uint16)
+        events_ts_arr = np.array([x.ts.to_nsec()//1000 for x in events],
+                                 dtype=np.int64)
+        events_pol_arr = np.array([x.polarity for x in events],
+                                  dtype=np.bool)
 
         resized_shape = dvs_data_ds.shape[0]+num_events
 
