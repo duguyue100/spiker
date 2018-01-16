@@ -19,7 +19,7 @@ logger = log.get_logger("hdf5-test", log.INFO)
 
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_exported.hdf5")
+    "sidewalk-1_exported.hdf5")
 
 dataset = h5py.File(hdf5_path, "r")
 

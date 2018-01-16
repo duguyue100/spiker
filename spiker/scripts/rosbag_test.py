@@ -19,10 +19,10 @@ logger = log.get_logger("rosbag-test", log.INFO)
 
 bag_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_test.bag")
+    "sidewalk-3.bag")
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "ccw_foyer_record_12_12_17_test.hdf5")
+    "sidewalk-3.hdf5")
 
 bag = rosbag.Bag(bag_path, "r")
 
@@ -105,11 +105,12 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
     if topic in ["/dvs/image_raw"]:
         image = rb.get_image(msg)
 
-        secs = msg.header.stamp.secs
-        nsecs = msg.header.stamp.nsecs
+        #  secs = msg.header.stamp.secs
+        #  nsecs = msg.header.stamp.nsecs
         # time in microsec
-        time_stamp = str(secs)+"{:>09d}".format(nsecs)[:6]
-        time_stamp = int(time_stamp)
+        #  time_stamp = str(secs)+"{:>09d}".format(nsecs)[:6]
+        #  time_stamp = int(time_stamp)
+        time_stamp = int(msg.header.stamp.to_sec()*1e6)
 
         aps_frame_ds[frame_idx] = image
         aps_time_ds[frame_idx] = time_stamp
@@ -140,9 +141,10 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
             events_loc_arr[event_idx, 1] = events[event_idx].y
 
             # event timestamp
-            time_stamp = str(events[event_idx].ts.secs) + \
-                "{:>09d}".format(events[event_idx].ts.nsecs)[:6]
-            time_stamp = int(time_stamp)
+            time_stamp = int(events[event_idx].ts.to_sec()*1e6)
+            #  time_stamp = str(events[event_idx].ts.secs) + \
+            #      "{:>09d}".format(events[event_idx].ts.nsecs)[:6]
+            #  time_stamp = int(time_stamp)
             events_ts_arr[event_idx] = time_stamp
 
             # event polarity
