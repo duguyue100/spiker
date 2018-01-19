@@ -19,7 +19,7 @@ logger = log.get_logger("rosbag-test", log.INFO)
 
 bag_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "cw_foyer_record_12_12_17.bag")
+    "monstruck_rec_2018-01-19_indoor_cw_speeddrive.bag")
 hdf5_path = bag_path[:-4]+".hdf5"
 
 bag = rosbag.Bag(bag_path, "r")
@@ -93,14 +93,14 @@ dvs_pol_ds = dvs_group.create_dataset(
     dtype="bool")
 
 # topic list
-topics_list = ["/dvs/image_raw", "/dvs/events", "/dvs/imu",
+topics_list = ["/dvs/image_raw/", "/dvs/events", "/dvs/imu",
                "/raw_pwm"]
 
 frame_idx = 0
 pwm_idx = 0
 event_packet_idx = 0
 for topic, msg, t in bag.read_messages(topics=topics_list):
-    if topic in ["/dvs/image_raw"]:
+    if topic in ["/dvs/image_raw/"]:
         image = rb.get_image(msg)
 
         aps_frame_ds[frame_idx] = image

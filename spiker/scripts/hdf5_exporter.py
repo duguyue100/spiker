@@ -15,7 +15,7 @@ import spiker
 from spiker import log
 
 
-def find_dvs_time_idx(dataset, time, idx_base=0, mode="pre", step=64):
+def find_dvs_time_idx(dataset, time, idx_base=0, mode="pre", step=16):
     """Find DVS index that is pre or post of given time.
 
     assume time at idx_base is smaller than time given
@@ -67,7 +67,7 @@ clip_value = 8
 
 hdf5_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "cw_foyer_record_12_12_17_test.hdf5")
+    "monstruck_rec_2018-01-19_indoor_cw_speeddrive.hdf5")
 #  write to new file
 hdf5_path_new = hdf5_path[:-5]+"_exported.hdf5"
 
