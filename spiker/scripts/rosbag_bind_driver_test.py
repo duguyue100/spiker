@@ -19,7 +19,7 @@ logger = log.get_logger("rosbag-new-bind-test", log.INFO)
 
 bag_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "new_dvs_bind.bag")
+    "monstruck_rec_2018-01-22-19-22-34.bag")
 bag = rosbag.Bag(bag_path, "r")
 
 bag_topics = rb.get_topics(bag)
@@ -50,8 +50,8 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
 
         print(image.shape)
 
-        cv2.imshow("aps", image[..., 0])
-        cv2.imshow("dvs", image[..., 1]/16.)
+        cv2.imshow("aps", image[..., 1])
+        cv2.imshow("dvs", image[..., 0]/16.)
         cv2.waitKey(40)
 
         frame_idx += 1
