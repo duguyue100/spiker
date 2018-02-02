@@ -19,7 +19,7 @@ logger = log.get_logger("rosbag-test", log.INFO)
 
 bag_path = os.path.join(
     spiker.SPIKER_DATA, "rosbag",
-    "monstruck_rec_2018-01-19_indoor_cw_speeddrive.bag")
+    "test-walk_speed-monstruck_rec_2018-02-02-18-49-15-foyer-ccw.bag")
 hdf5_path = bag_path[:-4]+".hdf5"
 
 bag = rosbag.Bag(bag_path, "r")
@@ -37,6 +37,8 @@ num_imu_pkgs = rb.get_msg_count(bag, "/dvs/imu")
 logger.info("Number of IMU packets: %d" % (num_imu_pkgs))
 num_pwm_pkgs = rb.get_msg_count(bag, "/raw_pwm")
 logger.info("Number of pwm packets: %d" % (num_pwm_pkgs))
+num_bind_pkgs = rb.get_msg_count(bag, "/dvs_bind")
+logger.info("Number of DVS binded frame packets: %d" % (num_bind_pkgs))
 start_time = bag.get_start_time()  # time in second
 logger.info("Start time: %f" % (start_time))
 end_time = bag.get_end_time()
@@ -53,6 +55,7 @@ dvs_group = dataset.create_group("dvs")
 imu_group = dataset.create_group("imu")
 extra_group = dataset.create_group("extra")
 pwm_group = extra_group.create_group("pwm")
+bind_group = extra_group.create_group("bind")
 
 # define dataset
 # APS Frame data
@@ -75,6 +78,17 @@ pwm_time_ds = pwm_group.create_dataset(
     shape=(num_pwm_pkgs,),
     dtype="int64")
 
+# DVS binded frames data
+bind_data_ds = bind_group.create_dataset(
+    name="bind_data",
+    shape=(num_bind_pkgs,)+img_shape+(2,),
+    dtype="uint8")
+bind_time_ds = bind_group.create_dataset(
+    name="pwm_ts",
+    shape=(num_bind_pkgs,),
+    dtype="int64")
+
+
 # DVS data
 dvs_data_ds = dvs_group.create_dataset(
     name="event_loc",
@@ -91,12 +105,18 @@ dvs_pol_ds = dvs_group.create_dataset(
     shape=(0,),
     maxshape=(None,),
     dtype="bool")
+dvs_packet_time = dvs_group.create_dataset(
+    name="packet_ts",
+    shape=(num_event_pkgs,),
+    dtype="int64")
 
 # topic list
 topics_list = ["/dvs/image_raw/", "/dvs/events", "/dvs/imu",
-               "/raw_pwm"]
+               "/raw_pwm", "/dvs_bind"]
+topics_list = ["/dvs_bind"]
 
 frame_idx = 0
+bind_frame_idx = 0
 pwm_idx = 0
 event_packet_idx = 0
 for topic, msg, t in bag.read_messages(topics=topics_list):
@@ -119,6 +139,15 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
         logger.info("Processed %d/%d PWM packet"
                     % (pwm_idx, num_pwm_pkgs))
         pwm_idx += 1
+    elif topic in ["/dvs_bind"]:
+        image = rb.get_image(msg, "bgr8")[..., :2]
+
+        bind_data_ds[bind_frame_idx] = image
+        bind_time_ds[bind_frame_idx] = msg.header.stamp.to_nsec()//1000
+
+        logger.info("Processed %d/%d Frame"
+                    % (bind_frame_idx, num_bind_pkgs))
+        bind_frame_idx += 1
     elif topic in ["/dvs/events"]:
         events = msg.events
         num_events = len(events)
@@ -140,6 +169,8 @@ for topic, msg, t in bag.read_messages(topics=topics_list):
         dvs_data_ds[-num_events:] = events_loc_arr
         dvs_time_ds[-num_events:] = events_ts_arr
         dvs_pol_ds[-num_events:] = events_pol_arr
+
+        dvs_packet_time[event_packet_idx] = msg.header.stamp.to_nsec()//1000
         logger.info("Processed %d/%d event packet, Seq: %d"
                     % (event_packet_idx, num_event_pkgs,
                        msg.header.seq))

@@ -29,8 +29,8 @@ install:
 ddd17-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/ddd17_test.py
 
-rosbag-test:
-	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/rosbag_test.py
+rosbag-exporter:
+	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/rosbag_exporter.py
 
 rosbag-new-bind-test:
 	PYTHONPATH=$(PYTHONPATH) python ./spiker/scripts/rosbag_bind_driver_test.py
