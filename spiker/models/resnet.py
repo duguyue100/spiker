@@ -109,7 +109,7 @@ def resnet_block(input_tensor, kernel_size,
 
 def resnet_builder(model_name, input_shape, batch_size, filter_list,
                    kernel_size, output_dim, stages, blocks, bottleneck=True,
-                   network_type="regress"):
+                   network_type="regress", conv_only=False):
     """Build ResNet.
 
     TODO: add more flexiblities to initialization, regularization, etc
@@ -150,6 +150,10 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
     x = Activation("relu")(x)
     x = GlobalAveragePooling2D(data_format="channels_last",
                                name="avg-pool")(x)
+
+    # Return current function if only returns convolution part
+    if conv_only:
+        return img_input, x
     x = Dense(output_dim,
               kernel_initializer="he_normal",
               kernel_regularizer=l2(0.0001),
