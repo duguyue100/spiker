@@ -154,11 +154,24 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
     # Return current function if only returns convolution part
     if conv_only:
         return img_input, x
-    x = Dense(output_dim,
-              kernel_initializer="he_normal",
-              kernel_regularizer=l2(0.0001),
-              bias_initializer="zeros",
-              name="output")(x)
+
+    if network_type == "corl":
+        steering = Dense(output_dim,
+                         kernel_initializer="he_normal",
+                         kernel_regularizer=l2(0.0001),
+                         bias_initializer="zeros",
+                         name="output")(x)
+        throttle = Dense(output_dim,
+                         kernel_initializer="he_normal",
+                         kernel_regularizer=l2(0.0001),
+                         bias_initializer="zeros",
+                         name="output")(x)
+    else:
+        x = Dense(output_dim,
+                  kernel_initializer="he_normal",
+                  kernel_regularizer=l2(0.0001),
+                  bias_initializer="zeros",
+                  name="output")(x)
 
     # for classification
     if network_type == "class":
@@ -166,6 +179,9 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
     elif network_type == "binary":
         x = Activation("sigmoid")(x)
 
-    model = Model(img_input, x, name=model_name)
+    if network_type == "corl":
+        model = Model(img_input, [steering, throttle], name=model_name)
+    else:
+        model = Model(img_input, x, name=model_name)
 
     return model
