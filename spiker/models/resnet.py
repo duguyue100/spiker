@@ -160,12 +160,12 @@ def resnet_builder(model_name, input_shape, batch_size, filter_list,
                          kernel_initializer="he_normal",
                          kernel_regularizer=l2(0.0001),
                          bias_initializer="zeros",
-                         name="output")(x)
+                         name="steering")(x)
         throttle = Dense(output_dim,
                          kernel_initializer="he_normal",
                          kernel_regularizer=l2(0.0001),
                          bias_initializer="zeros",
-                         name="output")(x)
+                         name="throttle")(x)
     else:
         x = Dense(output_dim,
                   kernel_initializer="he_normal",
