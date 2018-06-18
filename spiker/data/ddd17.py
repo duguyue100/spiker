@@ -176,15 +176,18 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     # filter low speed
     speed = data_file["vehicle_speed"][()][..., np.newaxis][first_f:-last_f]
-    high_speed_idx = (speed > speed_threshold)
+    if speed_threshold is not None:
+        high_speed_idx = (speed > speed_threshold)
 
     # format data type
     dvs_frames = data_file["dvs_frame"][()][first_f:-last_f]
-    dvs_frames = dvs_frames[high_speed_idx]
+    if speed_threshold is not None:
+        dvs_frames = dvs_frames[high_speed_idx]
     dvs_frames = (dvs_frames*(int(127./np.max(np.abs(dvs_frames)))) +
                   127).astype("uint8")
     aps_frames = data_file["aps_frame"][()][first_f:-last_f]
-    aps_frames = aps_frames[high_speed_idx]
+    if speed_threshold is not None:
+        aps_frames = aps_frames[high_speed_idx]
 
     # preprocess data
     data_shape = dvs_frames.shape
