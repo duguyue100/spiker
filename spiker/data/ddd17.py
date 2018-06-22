@@ -130,7 +130,7 @@ def prepare_train_data(file_name, target_size=(64, 86),
                        y_name="steering", only_y=False,
                        num_samples=None, verbose=True,
                        frame_cut=None, data_portion="full",
-                       speed_threshold=15.,
+                       speed_threshold=15., return_speed_idx=False,
                        data_type="float32"):
     """Prepare training data from HDF5.
 
@@ -147,12 +147,14 @@ def prepare_train_data(file_name, target_size=(64, 86),
     # determine data portion
     first_f = frame_cut[0]
     last_f = frame_cut[1]
-    num_frames = data_file["dvs_frame"][()].shape[0]
+    num_frames = data_file["dvs_frame"].shape[0]
     num_train = int((num_frames-first_f-last_f)*0.7)
     if data_portion == "test":
         first_f += num_train
     elif data_portion == "train":
-        last_f = first_f+num_train
+        last_f = num_frames-num_train-first_f
+    if num_samples is not None:
+        last_f = num_frames-first_f-num_samples
 
     if y_name == "steering":
         Y = data_file["steering_wheel_angle"][()][..., np.newaxis][
@@ -168,12 +170,11 @@ def prepare_train_data(file_name, target_size=(64, 86),
         Y = data_file["vehicle_speed"][()][..., np.newaxis][
             first_f:-last_f]
 
-    num_data = Y.shape[0] if num_samples is None else num_samples
-    Y = Y[:num_data]
     num_data = Y.shape[0]  # to prevent too short videos
 
     # filter low speed
     speed = data_file["vehicle_speed"][()][..., np.newaxis][first_f:-last_f]
+    # get high speed index
     if speed_threshold is not None:
         high_speed_idx = (speed > speed_threshold)
 
@@ -182,10 +183,12 @@ def prepare_train_data(file_name, target_size=(64, 86),
         num_data = Y.shape[0]
 
     if only_y is True:
+        if return_speed_idx is True:
+            return Y, return_speed_idx
         return Y
 
     # format data type
-    dvs_frames = data_file["dvs_frame"][()][first_f:-last_f]
+    dvs_frames = data_file["dvs_frame"][first_f:-last_f][()]
     if speed_threshold is not None:
         dvs_frames = dvs_frames[high_speed_idx[:, 0], ...]
 
@@ -194,19 +197,18 @@ def prepare_train_data(file_name, target_size=(64, 86),
     dvs_frame_std = np.std(dvs_frames)
     dvs_frames = np.clip(dvs_frames, dvs_frame_mean-3*dvs_frame_std,
                          dvs_frame_mean+3*dvs_frame_std)
-    dvs_frames = (dvs_frames*(int(127./np.max(np.abs(dvs_frames)))) +
-                  127).astype("uint8")
-    aps_frames = data_file["aps_frame"][()][first_f:-last_f]
+    dvs_frames = dvs_frames/(2*np.max(np.abs(dvs_frames)))+0.5
+    aps_frames = data_file["aps_frame"][first_f:-last_f][()]/255.
     if speed_threshold is not None:
         aps_frames = aps_frames[high_speed_idx[:, 0], ...]
 
     # preprocess data
     data_shape = dvs_frames.shape
     if target_size is not None:
-        frames = np.zeros((num_data,)+target_size+(2,), dtype="uint8")
+        frames = np.zeros((num_data,)+target_size+(2,), dtype=data_type)
     else:
         frames = np.zeros((num_data,)+(data_shape[1], data_shape[2])+(2,),
-                          dtype="uint8")
+                          dtype=data_type)
     for idx in range(num_data):
         if target_size is not None:
             frames[idx, :, :, 0] = imresize(
@@ -222,6 +224,8 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     data_file.close()
 
+    if return_speed_idx is True:
+        return frames.astype(data_type), Y, high_speed_idx
     return frames.astype(data_type), Y
 
 
