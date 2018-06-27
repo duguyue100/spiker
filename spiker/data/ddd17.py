@@ -184,7 +184,7 @@ def prepare_train_data(file_name, target_size=(64, 86),
 
     if only_y is True:
         if return_speed_idx is True:
-            return Y, return_speed_idx
+            return Y, high_speed_idx
         return Y
 
     # format data type
